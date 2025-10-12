@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -157,6 +157,17 @@
             box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
         }
 
+        .button.voice-active {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            animation: voicePulse 1.5s infinite;
+        }
+
+        @keyframes voicePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         .score-board {
             background: #fff3cd;
             border: 2px solid #ffeaa7;
@@ -215,6 +226,82 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .mode-selection {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .mode-button {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .mode-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+        }
+
+        .mode-button.active {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3);
+        }
+
+        .data-section {
+            background: #e7f3ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .data-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
         /* 响应式设计 */
         @media (max-width: 600px) {
             .container {
@@ -244,6 +331,14 @@
                 width: 100%;
                 max-width: 250px;
             }
+            
+            .mode-buttons {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -252,6 +347,17 @@
         <div class="header">
             <h1>🎭 情绪识别小助手</h1>
             <p>特殊教育互动教学工具 - 帮助孩子认识和表达情绪</p>
+        </div>
+
+        <!-- 游戏模式选择 -->
+        <div class="mode-selection">
+            <h3>🎮 选择游戏模式</h3>
+            <div class="mode-buttons">
+                <button class="mode-button active" onclick="switchGameMode('imitation')">模仿模式</button>
+                <button class="mode-button" onclick="switchGameMode('recognition')">识别模式</button>
+                <button class="mode-button" onclick="switchGameMode('story')">故事模式</button>
+                <button class="mode-button" onclick="switchGameMode('memory')">记忆模式</button>
+            </div>
         </div>
 
         <div class="game-area">
@@ -289,17 +395,32 @@
             <button class="button" onclick="startGame()">开始游戏</button>
             <button class="button secondary" onclick="takePhoto()">拍照分析</button>
             <button class="button secondary" onclick="changeTarget()">换一个情绪</button>
+            <button class="button secondary" id="voiceButton" onclick="toggleVoiceListening()">🎤 开始语音</button>
+            <button class="button secondary" onclick="exportData()">📊 导出数据</button>
+            <button class="button secondary" onclick="showStatistics()">📈 查看统计</button>
             <button class="button danger" onclick="stopGame()">停止游戏</button>
+        </div>
+
+        <!-- 数据统计区域 -->
+        <div class="data-section" id="dataSection" style="display: none;">
+            <h3>📊 学习数据统计</h3>
+            <div class="stats-grid" id="statsGrid">
+                <!-- 统计数据将通过JavaScript动态填充 -->
+            </div>
+            <div style="text-align: center;">
+                <button class="button secondary" onclick="clearData()">🗑️ 清除数据</button>
+            </div>
         </div>
 
         <div class="instructions">
             <h3>📋 使用说明：</h3>
             <ul>
-                <li>点击"开始游戏"启动摄像头</li>
-                <li>看着摄像头，尝试做出"目标情绪"的表情</li>
-                <li>当检测到的情绪与目标匹配时，获得10分</li>
-                <li>使用"拍照分析"可以保存当前表情</li>
-                <li>点击"换一个情绪"可以更换目标</li>
+                <li><strong>语音控制</strong>：点击"开始语音"后，可以说"开始游戏"、"停止"、"拍照"、"换一个"等命令</li>
+                <li><strong>模仿模式</strong>：看着摄像头，尝试做出"目标情绪"的表情</li>
+                <li><strong>识别模式</strong>：系统会显示表情，请说出情绪名称</li>
+                <li><strong>故事模式</strong>：根据故事内容做出相应的表情</li>
+                <li><strong>记忆模式</strong>：记住情绪序列并按顺序重现</li>
+                <li>使用"导出数据"可以下载学习记录，用于教学分析</li>
             </ul>
         </div>
     </div>
@@ -316,23 +437,86 @@
             '恐惧': '😨',
             '中性': '😐'
         };
+
+        // 游戏模式
+        const GameModes = {
+            IMITATION: 'imitation',      // 模仿模式
+            RECOGNITION: 'recognition',  // 识别模式
+            STORY: 'story',             // 故事模式
+            MEMORY: 'memory'            // 记忆模式
+        };
         
         // 游戏状态
         let currentTargetEmotion = '高兴';
+        let currentGameMode = GameModes.IMITATION;
         let isGameRunning = false;
         let userScore = 0;
         let detectionInterval;
+        let recognitionTargetEmotion = ''; // 识别模式的目标情绪
 
+        // 语音功能
+        let speechRecognition;
+        let isListening = false;
+
+        // 数据记录功能
+        let gameData = {
+            sessions: [],
+            currentSession: null,
+            settings: {
+                studentName: '未知学生',
+                teacherName: '未知老师'
+            }
+        };
+
+        // ========== 初始化函数 ==========
+        
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
             updateTargetEmotionDisplay();
+            loadGameData();
+            initSpeechRecognition();
+            
+            // 页面加载时欢迎语
+            setTimeout(() => {
+                speak("欢迎使用情绪识别小助手！点击开始游戏，或者说'开始'来启动");
+            }, 1000);
         });
 
-        // 更新目标情绪显示
-        function updateTargetEmotionDisplay() {
-            const targetElement = document.getElementById('targetEmotion');
-            targetElement.textContent = `${currentTargetEmotion} ${emotionIcons[currentTargetEmotion]}`;
+        // 初始化语音识别
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.log("您的浏览器不支持语音识别");
+                return null;
+            }
+            
+            speechRecognition = new SpeechRecognition();
+            speechRecognition.continuous = false;
+            speechRecognition.interimResults = false;
+            speechRecognition.lang = 'zh-CN';
+            
+            speechRecognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                handleVoiceCommand(transcript);
+            };
+            
+            speechRecognition.onerror = function(event) {
+                console.log("语音识别错误:", event.error);
+                if (event.error === 'not-allowed') {
+                    alert("请允许浏览器使用麦克风权限");
+                }
+            };
+            
+            speechRecognition.onend = function() {
+                isListening = false;
+                updateVoiceButton();
+            };
+            
+            return speechRecognition;
         }
+
+        // ========== 核心游戏功能 ==========
 
         // 开始游戏
         async function startGame() {
@@ -362,10 +546,13 @@
                 document.getElementById('emotionResult').textContent = "检测中...";
                 document.getElementById('successMessage').style.display = 'none';
                 
+                // 开始新会话
+                startNewSession();
+                
                 // 开始情绪检测循环
                 startEmotionDetection();
                 
-                alert("游戏开始！请尝试做出 '" + currentTargetEmotion + "' 的表情");
+                speak("游戏开始！请尝试做出" + currentTargetEmotion + "的表情");
                 
             } catch (err) {
                 alert("无法访问摄像头: " + err.message);
@@ -383,7 +570,7 @@
                 if (isGameRunning) {
                     detectEmotion();
                 }
-            }, 2000); // 每2秒检测一次
+            }, 2000);
         }
 
         // 检测情绪（模拟版本）
@@ -392,7 +579,11 @@
             
             // 模拟AI检测 - 在实际应用中这里会调用真实的AI API
             const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-            const confidence = (Math.random() * 30 + 70).toFixed(1); // 70-100% 置信度
+            const confidence = (Math.random() * 30 + 70).toFixed(1);
+            const matched = (randomEmotion === currentTargetEmotion && confidence > 75);
+            
+            // 记录检测结果
+            recordEmotionDetection(currentTargetEmotion, randomEmotion, confidence, matched);
             
             // 更新显示
             const emotionResult = document.getElementById('emotionResult');
@@ -402,7 +593,7 @@
             confidenceResult.textContent = confidence + "%";
             
             // 检查是否匹配目标情绪
-            if (randomEmotion === currentTargetEmotion && confidence > 75) {
+            if (matched) {
                 handleSuccess();
             }
         }
@@ -417,6 +608,8 @@
             const successMessage = document.getElementById('successMessage');
             successMessage.style.display = 'block';
             successMessage.textContent = `🎉 太棒了！${currentTargetEmotion}表情匹配成功！+10分`;
+            
+            speak("太棒了！匹配成功！加10分");
             
             // 2秒后更换目标情绪
             setTimeout(() => {
@@ -437,6 +630,49 @@
             document.getElementById('emotionResult').textContent = "等待检测...";
             document.getElementById('confidenceResult').textContent = "--%";
         }
+
+        // 更新目标情绪显示
+        function updateTargetEmotionDisplay() {
+            const targetElement = document.getElementById('targetEmotion');
+            targetElement.textContent = `${currentTargetEmotion} ${emotionIcons[currentTargetEmotion]}`;
+        }
+
+        // 停止游戏
+        function stopGame() {
+            isGameRunning = false;
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+            }
+            
+            const video = document.getElementById('video');
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            
+            document.getElementById('emotionResult').textContent = "游戏已停止";
+            document.getElementById('confidenceResult').textContent = "--%";
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // 结束当前会话
+            if (gameData.currentSession) {
+                gameData.currentSession.endTime = new Date().toISOString();
+                saveGameData();
+            }
+            
+            speak("游戏结束");
+        }
+
+        // 手动更换目标情绪
+        function changeTarget() {
+            changeTargetEmotion();
+            if (isGameRunning) {
+                speak("新目标情绪: " + currentTargetEmotion + " - 请做出相应的表情！");
+            }
+        }
+
+        // ========== 拍照功能 ==========
 
         // 拍照功能
         function takePhoto() {
@@ -484,35 +720,583 @@
             photoResult.className = 'photo-result';
             document.querySelector('.game-area').appendChild(photoResult);
             
-            alert("照片已拍摄！可以下载保存。");
+            speak("照片已拍摄！可以下载保存。");
         }
 
-        // 停止游戏
-        function stopGame() {
-            isGameRunning = false;
-            if (detectionInterval) {
-                clearInterval(detectionInterval);
+        // ========== 语音功能 ==========
+
+        // 语音合成 - 让应用说话
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                // 停止任何正在进行的语音
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                
+                // 设置语音参数，使其更接近儿童友好的声音
+                const voices = speechSynthesis.getVoices();
+                const chineseVoice = voices.find(voice => 
+                    voice.lang.includes('zh') && voice.name.includes('Female')
+                );
+                
+                if (chineseVoice) {
+                    utterance.voice = chineseVoice;
+                }
+                
+                speechSynthesis.speak(utterance);
             }
-            
-            const video = document.getElementById('video');
-            if (video.srcObject) {
-                const tracks = video.srcObject.getTracks();
-                tracks.forEach(track => track.stop());
-                video.srcObject = null;
-            }
-            
-            document.getElementById('emotionResult').textContent = "游戏已停止";
-            document.getElementById('confidenceResult').textContent = "--%";
-            document.getElementById('successMessage').style.display = 'none';
         }
 
-        // 手动更换目标情绪
-        function changeTarget() {
-            changeTargetEmotion();
-            if (isGameRunning) {
-                alert("新目标情绪: " + currentTargetEmotion + " - 请做出相应的表情！");
+        // 开始语音监听
+        function startVoiceListening() {
+            if (!speechRecognition) {
+                speechRecognition = initSpeechRecognition();
+            }
+            
+            if (speechRecognition) {
+                try {
+                    speechRecognition.start();
+                    isListening = true;
+                    updateVoiceButton();
+                    speak("我在听您说话");
+                } catch (error) {
+                    console.log("语音识别启动失败:", error);
+                }
             }
         }
+
+        // 停止语音监听
+        function stopVoiceListening() {
+            if (speechRecognition && isListening) {
+                speechRecognition.stop();
+                isListening = false;
+                updateVoiceButton();
+            }
+        }
+
+        // 切换语音监听状态
+        function toggleVoiceListening() {
+            if (isListening) {
+                stopVoiceListening();
+            } else {
+                startVoiceListening();
+            }
+        }
+
+        // 更新语音按钮状态
+        function updateVoiceButton() {
+            const voiceButton = document.getElementById('voiceButton');
+            if (voiceButton) {
+                if (isListening) {
+                    voiceButton.innerHTML = '🎤 停止语音';
+                    voiceButton.classList.add('voice-active');
+                } else {
+                    voiceButton.innerHTML = '🎤 开始语音';
+                    voiceButton.classList.remove('voice-active');
+                }
+            }
+        }
+
+        // 处理语音命令
+        function handleVoiceCommand(command) {
+            console.log("识别到的命令:", command);
+            
+            if (command.includes('开始') || command.includes('启动')) {
+                startGame();
+            }
+            else if (command.includes('停止') || command.includes('结束')) {
+                stopGame();
+            }
+            else if (command.includes('拍照') || command.includes('截图')) {
+                takePhoto();
+            }
+            else if (command.includes('换一个') || command.includes('下一个')) {
+                changeTarget();
+            }
+            else if (command.includes('得分') || command.includes('分数')) {
+                speak("当前得分是" + userScore + "分");
+            }
+            else if (command.includes('统计') || command.includes('数据')) {
+                showStatistics();
+            }
+            else if (command.includes('导出')) {
+                exportData();
+            }
+            else {
+                // 在识别模式下，检查是否是情绪名称
+                if (currentGameMode === GameModes.RECOGNITION) {
+                    checkRecognitionAnswer(command);
+                } else {
+                    speak("我听不懂这个命令，请说开始、停止、拍照、换一个、得分、统计或导出");
+                }
+            }
+        }
+
+        // ========== 游戏模式功能 ==========
+
+        // 切换游戏模式
+        function switchGameMode(mode) {
+            // 更新按钮状态
+            document.querySelectorAll('.mode-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            currentGameMode = mode;
+            stopGame();
+            userScore = 0;
+            document.getElementById('scoreValue').textContent = '0';
+            
+            switch(mode) {
+                case GameModes.IMITATION:
+                    speak("切换到模仿模式，请模仿目标情绪");
+                    document.getElementById('targetEmotion').textContent = `${currentTargetEmotion} ${emotionIcons[currentTargetEmotion]}`;
+                    document.getElementById('emotionResult').textContent = "等待检测...";
+                    break;
+                    
+                case GameModes.RECOGNITION:
+                    speak("切换到识别模式，我会做出表情，请你猜猜是什么情绪");
+                    startRecognitionMode();
+                    break;
+                    
+                case GameModes.STORY:
+                    speak("切换到故事模式，听故事做出相应的表情");
+                    startStoryMode();
+                    break;
+                    
+                case GameModes.MEMORY:
+                    speak("切换到记忆模式，记住情绪序列");
+                    startMemoryMode();
+                    break;
+            }
+        }
+
+        // 识别模式
+        function startRecognitionMode() {
+            // 随机选择目标情绪但不显示
+            recognitionTargetEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+            
+            document.getElementById('targetEmotion').textContent = "？ ？ ？";
+            document.getElementById('emotionResult').textContent = "请说出情绪名称";
+            
+            // 显示表情提示
+            showEmotionHint(recognitionTargetEmotion);
+            
+            // 开始语音识别来听取用户的回答
+            setTimeout(() => {
+                speak("我现在的表情是什么？");
+                startVoiceListening();
+            }, 1000);
+        }
+
+        // 检查识别模式答案
+        function checkRecognitionAnswer(answer) {
+            let matched = false;
+            
+            // 检查答案是否匹配目标情绪
+            emotions.forEach(emotion => {
+                if (answer.includes(emotion) && emotion === recognitionTargetEmotion) {
+                    matched = true;
+                }
+            });
+            
+            if (matched) {
+                userScore += 10;
+                document.getElementById('scoreValue').textContent = userScore;
+                document.getElementById('emotionResult').textContent = `正确！是${recognitionTargetEmotion}`;
+                speak("太棒了！答对了！加10分");
+                
+                // 记录成功
+                recordEmotionDetection(recognitionTargetEmotion, recognitionTargetEmotion, 100, true);
+                
+                setTimeout(() => {
+                    startRecognitionMode(); // 开始新一轮
+                }, 2000);
+            } else {
+                document.getElementById('emotionResult').textContent = `不对哦，是${recognitionTargetEmotion}`;
+                speak(`不对哦，是${recognitionTargetEmotion}，再试一次`);
+                
+                // 记录失败
+                recordEmotionDetection(recognitionTargetEmotion, answer, 0, false);
+                
+                setTimeout(() => {
+                    startRecognitionMode(); // 开始新一轮
+                }, 2000);
+            }
+        }
+
+        // 故事模式
+        function startStoryMode() {
+            const stories = [
+                { 
+                    story: "小明今天生日，他收到了最喜欢的玩具，感到非常...", 
+                    emotion: "高兴" 
+                },
+                { 
+                    story: "小红不小心摔倒了，膝盖很疼，她觉得...", 
+                    emotion: "伤心" 
+                },
+                { 
+                    story: "小华在黑暗的房间里听到了奇怪的声音，他感到...", 
+                    emotion: "恐惧" 
+                },
+                { 
+                    story: "小丽的朋友分享了美味的蛋糕，她觉得...", 
+                    emotion: "高兴" 
+                },
+                { 
+                    story: "小刚的作业被同学撕坏了，他感到...", 
+                    emotion: "生气" 
+                },
+                { 
+                    story: "小美在路边看到了一只可爱的小猫，她感到...", 
+                    emotion: "高兴" 
+                }
+            ];
+            
+            const randomStory = stories[Math.floor(Math.random() * stories.length)];
+            currentTargetEmotion = randomStory.emotion;
+            
+            updateTargetEmotionDisplay();
+            document.getElementById('emotionResult').textContent = "请做出相应的表情";
+            
+            speak(randomStory.story);
+            startGame();
+        }
+
+        // 记忆模式
+        function startMemoryMode() {
+            const sequence = [];
+            const sequenceLength = 3; // 记忆序列长度
+            
+            for (let i = 0; i < sequenceLength; i++) {
+                sequence.push(emotions[Math.floor(Math.random() * emotions.length)]);
+            }
+            
+            // 显示序列
+            document.getElementById('targetEmotion').textContent = sequence.join(' → ');
+            document.getElementById('emotionResult').textContent = "请记住这个情绪序列";
+            
+            speak("请记住这个情绪序列：" + sequence.join('、'));
+            
+            // 5秒后开始游戏
+            setTimeout(() => {
+                document.getElementById('targetEmotion').textContent = "请按顺序做出表情";
+                document.getElementById('emotionResult').textContent = "第一个表情是：" + sequence[0];
+                currentTargetEmotion = sequence[0];
+                
+                speak("现在请按顺序做出这些表情，第一个是" + sequence[0]);
+                startGame();
+                
+                // 设置记忆模式特定的检测逻辑
+                let currentStep = 0;
+                const originalDetectEmotion = detectEmotion;
+                
+                detectEmotion = function() {
+                    if (!isGameRunning) return;
+                    
+                    const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+                    const confidence = (Math.random() * 30 + 70).toFixed(1);
+                    const matched = (randomEmotion === sequence[currentStep] && confidence > 75);
+                    
+                    recordEmotionDetection(sequence[currentStep], randomEmotion, confidence, matched);
+                    
+                    document.getElementById('emotionResult').textContent = `${randomEmotion} ${emotionIcons[randomEmotion]}`;
+                    document.getElementById('confidenceResult').textContent = confidence + "%";
+                    
+                    if (matched) {
+                        currentStep++;
+                        if (currentStep < sequence.length) {
+                            currentTargetEmotion = sequence[currentStep];
+                            updateTargetEmotionDisplay();
+                            document.getElementById('emotionResult').textContent = `正确！下一个是：${sequence[currentStep]}`;
+                            speak("正确！下一个是" + sequence[currentStep]);
+                            
+                            // 给用户时间准备下一个表情
+                            setTimeout(() => {
+                                document.getElementById('emotionResult').textContent = "请做出表情";
+                            }, 2000);
+                        } else {
+                            // 完成整个序列
+                            userScore += 30; // 记忆模式奖励更多分数
+                            document.getElementById('scoreValue').textContent = userScore;
+                            document.getElementById('successMessage').style.display = 'block';
+                            document.getElementById('successMessage').textContent = "🎉 太棒了！完整序列匹配成功！+30分";
+                            speak("太棒了！完整序列匹配成功！加30分");
+                            
+                            setTimeout(() => {
+                                stopGame();
+                                detectEmotion = originalDetectEmotion; // 恢复原始检测函数
+                                startMemoryMode(); // 开始新的记忆游戏
+                            }, 3000);
+                        }
+                    }
+                };
+            }, 5000);
+        }
+
+        // 显示情绪提示
+        function showEmotionHint(emotion) {
+            const hints = {
+                '高兴': "😊 嘴角上扬，眼睛眯起",
+                '伤心': "😢 嘴角下垂，眼眶湿润", 
+                '惊讶': "😲 眼睛睁大，嘴巴张开",
+                '生气': "😠 眉头紧锁，嘴角下拉",
+                '厌恶': "🤢 鼻子皱起，嘴角歪斜",
+                '恐惧': "😨 眼睛睁大，嘴巴张开",
+                '中性': "😐 表情平静，没有明显情绪"
+            };
+            
+            document.getElementById('emotionResult').textContent = hints[emotion] || "请观察表情特征";
+        }
+
+        // ========== 数据记录和分析功能 ==========
+
+        // 开始新会话
+        function startNewSession() {
+            const session = {
+                id: Date.now(),
+                startTime: new Date().toISOString(),
+                endTime: null,
+                gameMode: currentGameMode,
+                targetEmotions: [],
+                detectedEmotions: [],
+                scores: [],
+                totalScore: 0
+            };
+            
+            gameData.currentSession = session;
+            gameData.sessions.push(session);
+            
+            saveGameData();
+        }
+
+        // 记录情绪检测结果
+        function recordEmotionDetection(targetEmotion, detectedEmotion, confidence, matched) {
+            if (!gameData.currentSession) return;
+            
+            const record = {
+                timestamp: new Date().toISOString(),
+                targetEmotion: targetEmotion,
+                detectedEmotion: detectedEmotion,
+                confidence: parseFloat(confidence),
+                matched: matched,
+                score: matched ? (currentGameMode === GameModes.MEMORY ? 10 : 10) : 0
+            };
+            
+            gameData.currentSession.detectedEmotions.push(record);
+            
+            if (matched) {
+                const points = currentGameMode === GameModes.MEMORY ? 10 : 10;
+                gameData.currentSession.scores.push(points);
+                gameData.currentSession.totalScore += points;
+            }
+            
+            saveGameData();
+        }
+
+        // 保存数据到本地存储
+        function saveGameData() {
+            try {
+                localStorage.setItem('emotionGameData', JSON.stringify(gameData));
+            } catch (error) {
+                console.log("保存数据失败:", error);
+            }
+        }
+
+        // 从本地存储加载数据
+        function loadGameData() {
+            try {
+                const savedData = localStorage.getItem('emotionGameData');
+                if (savedData) {
+                    gameData = JSON.parse(savedData);
+                    
+                    // 计算总得分
+                    userScore = gameData.sessions.reduce((total, session) => total + session.totalScore, 0);
+                    document.getElementById('scoreValue').textContent = userScore;
+                }
+            } catch (error) {
+                console.log("加载数据失败:", error);
+            }
+        }
+
+        // 导出数据为CSV文件
+        function exportData() {
+            if (!gameData.sessions.length) {
+                alert("还没有游戏数据可以导出");
+                return;
+            }
+            
+            let csvContent = "时间,游戏模式,目标情绪,检测情绪,置信度%,是否匹配,得分\n";
+            
+            gameData.sessions.forEach(session => {
+                session.detectedEmotions.forEach(record => {
+                    const modeText = getGameModeText(session.gameMode);
+                    csvContent += `"${record.timestamp}","${modeText}","${record.targetEmotion}","${record.detectedEmotion}",${record.confidence},${record.matched ? '是' : '否'},${record.score}\n`;
+                });
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `情绪学习数据_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            speak("数据导出完成");
+        }
+
+        // 获取游戏模式文本
+        function getGameModeText(mode) {
+            switch(mode) {
+                case GameModes.IMITATION: return "模仿模式";
+                case GameModes.RECOGNITION: return "识别模式";
+                case GameModes.STORY: return "故事模式";
+                case GameModes.MEMORY: return "记忆模式";
+                default: return "未知模式";
+            }
+        }
+
+        // 显示数据统计
+        function showStatistics() {
+            if (!gameData.sessions.length) {
+                alert("还没有游戏数据");
+                return;
+            }
+            
+            const totalSessions = gameData.sessions.length;
+            const totalDetections = gameData.sessions.reduce((sum, session) => sum + session.detectedEmotions.length, 0);
+            const totalScore = gameData.sessions.reduce((sum, session) => sum + session.totalScore, 0);
+            
+            const successfulDetections = gameData.sessions.reduce((sum, session) => 
+                sum + session.detectedEmotions.filter(r => r.matched).length, 0);
+            const successRate = totalDetections > 0 ? 
+                (successfulDetections / totalDetections * 100).toFixed(1) : 0;
+            
+            // 按模式统计
+            const modeStats = {};
+            gameData.sessions.forEach(session => {
+                const mode = session.gameMode;
+                if (!modeStats[mode]) {
+                    modeStats[mode] = { sessions: 0, detections: 0, score: 0 };
+                }
+                modeStats[mode].sessions += 1;
+                modeStats[mode].detections += session.detectedEmotions.length;
+                modeStats[mode].score += session.totalScore;
+            });
+            
+            // 更新统计数据展示
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${totalSessions}</div>
+                    <div class="stat-label">总游戏次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${totalDetections}</div>
+                    <div class="stat-label">总检测次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${totalScore}</div>
+                    <div class="stat-label">总得分</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${successRate}%</div>
+                    <div class="stat-label">匹配成功率</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${getProgressTrend()}</div>
+                    <div class="stat-label">进步趋势</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${getFavoriteEmotion()}</div>
+                    <div class="stat-label">最擅长情绪</div>
+                </div>
+            `;
+            
+            // 显示数据区域
+            document.getElementById('dataSection').style.display = 'block';
+            
+            speak(`统计数据已显示：总游戏${totalSessions}次，总得分${totalScore}，成功率${successRate}%`);
+        }
+
+        // 获取进步趋势
+        function getProgressTrend() {
+            if (gameData.sessions.length < 2) return "需要更多数据";
+            
+            const recentSessions = gameData.sessions.slice(-5);
+            const successRates = recentSessions.map(session => {
+                const matches = session.detectedEmotions.filter(r => r.matched).length;
+                return session.detectedEmotions.length > 0 ? (matches / session.detectedEmotions.length * 100) : 0;
+            });
+            
+            if (successRates.length < 2) return "稳定";
+            const first = successRates[0];
+            const last = successRates[successRates.length - 1];
+            
+            if (last > first + 10) return "明显进步 📈";
+            if (last > first + 5) return "有所进步 ↗️";
+            if (last < first - 10) return "需要练习 📉";
+            return "稳定 →";
+        }
+
+        // 获取最擅长情绪
+        function getFavoriteEmotion() {
+            if (!gameData.sessions.length) return "无数据";
+            
+            const emotionStats = {};
+            
+            gameData.sessions.forEach(session => {
+                session.detectedEmotions.forEach(record => {
+                    if (record.matched) {
+                        if (!emotionStats[record.targetEmotion]) {
+                            emotionStats[record.targetEmotion] = 0;
+                        }
+                        emotionStats[record.targetEmotion]++;
+                    }
+                });
+            });
+            
+            let favoriteEmotion = "无";
+            let maxCount = 0;
+            
+            for (const emotion in emotionStats) {
+                if (emotionStats[emotion] > maxCount) {
+                    maxCount = emotionStats[emotion];
+                    favoriteEmotion = emotion;
+                }
+            }
+            
+            return favoriteEmotion;
+        }
+
+        // 清除所有数据
+        function clearData() {
+            if (confirm("确定要清除所有数据吗？此操作不可恢复！")) {
+                gameData = {
+                    sessions: [],
+                    currentSession: null,
+                    settings: gameData.settings
+                };
+                userScore = 0;
+                document.getElementById('scoreValue').textContent = '0';
+                saveGameData();
+                document.getElementById('dataSection').style.display = 'none';
+                speak("所有数据已清除");
+            }
+        }
+
+        // 预加载语音合成声音
+        window.speechSynthesis.onvoiceschanged = function() {
+            // 声音列表已加载
+        };
     </script>
 </body>
 </html>
