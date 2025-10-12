@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -302,6 +302,214 @@
             color: #666;
         }
 
+        .manual-selection {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid #4CAF50;
+        }
+
+        .manual-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .manual-emotion-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            min-width: 100px;
+        }
+
+        .manual-emotion-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        /* 新游戏模式样式 */
+        .face-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .face-image {
+            width: 200px;
+            height: 200px;
+            background: #ffeaa7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            border: 4px solid #4CAF50;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .face-placeholder {
+            font-size: 60px;
+            color: #b2bec3;
+        }
+
+        .emotion-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .emotion-option {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: grab;
+            border: 3px solid #ddd;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .emotion-option:hover {
+            transform: scale(1.1);
+            border-color: #4CAF50;
+        }
+
+        .emotion-option.dragging {
+            opacity: 0.5;
+        }
+
+        .situation-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .situation-text {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #2d3436;
+            line-height: 1.5;
+        }
+
+        .situation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .situation-option {
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+
+        .situation-option:hover {
+            transform: translateY(-3px);
+            border-color: #4CAF50;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .eliminate-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            max-width: 500px;
+        }
+
+        .emotion-bubble {
+            background: white;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            border: 3px solid #ddd;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            animation: float 3s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .emotion-bubble:hover {
+            transform: scale(1.1);
+        }
+
+        .emotion-bubble.eliminated {
+            opacity: 0.3;
+            transform: scale(0.8);
+            animation: none;
+        }
+
+        .identification-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .identification-image {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+
+        .identification-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .identification-option {
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+
+        .identification-option:hover {
+            transform: translateY(-3px);
+            border-color: #4CAF50;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
         /* 响应式设计 */
         @media (max-width: 600px) {
             .container {
@@ -339,6 +547,42 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .manual-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .manual-emotion-btn {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .emotion-options {
+                gap: 10px;
+            }
+            
+            .emotion-option {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+            
+            .face-image {
+                width: 150px;
+                height: 150px;
+                font-size: 60px;
+            }
+            
+            .eliminate-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .emotion-bubble {
+                width: 80px;
+                height: 80px;
+                font-size: 30px;
+            }
         }
     </style>
 </head>
@@ -357,6 +601,11 @@
                 <button class="mode-button" onclick="switchGameMode('recognition')">识别模式</button>
                 <button class="mode-button" onclick="switchGameMode('story')">故事模式</button>
                 <button class="mode-button" onclick="switchGameMode('memory')">记忆模式</button>
+                <button class="mode-button" onclick="switchGameMode('manual')">手动模式</button>
+                <button class="mode-button" onclick="switchGameMode('face')">表情选择</button>
+                <button class="mode-button" onclick="switchGameMode('situation')">情境配对</button>
+                <button class="mode-button" onclick="switchGameMode('identify')">情绪指认</button>
+                <button class="mode-button" onclick="switchGameMode('eliminate')">消除坏情绪</button>
             </div>
         </div>
 
@@ -420,6 +669,11 @@
                 <li><strong>识别模式</strong>：系统会显示表情，请说出情绪名称</li>
                 <li><strong>故事模式</strong>：根据故事内容做出相应的表情</li>
                 <li><strong>记忆模式</strong>：记住情绪序列并按顺序重现</li>
+                <li><strong>手动模式</strong>：老师根据学生表情手动选择对应情绪</li>
+                <li><strong>表情选择</strong>：将正确的表情拖到无脸头像上</li>
+                <li><strong>情境配对</strong>：根据情境选择合适的情感反应</li>
+                <li><strong>情绪指认</strong>：识别并命名各种情绪表情</li>
+                <li><strong>消除坏情绪</strong>：点击消除所有负面情绪</li>
                 <li>使用"导出数据"可以下载学习记录，用于教学分析</li>
             </ul>
         </div>
@@ -440,10 +694,15 @@
 
         // 游戏模式
         const GameModes = {
-            IMITATION: 'imitation',      // 模仿模式
-            RECOGNITION: 'recognition',  // 识别模式
-            STORY: 'story',             // 故事模式
-            MEMORY: 'memory'            // 记忆模式
+            IMITATION: 'imitation',
+            RECOGNITION: 'recognition',
+            STORY: 'story',
+            MEMORY: 'memory',
+            MANUAL: 'manual',
+            FACE: 'face',
+            SITUATION: 'situation',
+            IDENTIFY: 'identify',
+            ELIMINATE: 'eliminate'
         };
         
         // 游戏状态
@@ -452,7 +711,7 @@
         let isGameRunning = false;
         let userScore = 0;
         let detectionInterval;
-        let recognitionTargetEmotion = ''; // 识别模式的目标情绪
+        let recognitionTargetEmotion = '';
 
         // 语音功能
         let speechRecognition;
@@ -573,23 +832,35 @@
             }, 2000);
         }
 
-        // 检测情绪（模拟版本）
+        // 检测情绪（改进的模拟版本）
         function detectEmotion() {
             if (!isGameRunning) return;
             
-            // 模拟AI检测 - 在实际应用中这里会调用真实的AI API
-            const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-            const confidence = (Math.random() * 30 + 70).toFixed(1);
-            const matched = (randomEmotion === currentTargetEmotion && confidence > 75);
+            // 改进的模拟逻辑：增加匹配目标情绪的概率
+            let detectedEmotion;
+            const random = Math.random();
+            
+            // 70% 概率检测到正确情绪（模拟用户做出正确表情的情况）
+            // 30% 概率随机错误情绪（模拟识别错误）
+            if (random < 0.7) {
+                detectedEmotion = currentTargetEmotion; // 正确识别
+            } else {
+                // 随机选择其他情绪（错误识别）
+                const otherEmotions = emotions.filter(e => e !== currentTargetEmotion);
+                detectedEmotion = otherEmotions[Math.floor(Math.random() * otherEmotions.length)];
+            }
+            
+            const confidence = (Math.random() * 20 + 75).toFixed(1); // 75-95% 置信度
+            const matched = (detectedEmotion === currentTargetEmotion);
             
             // 记录检测结果
-            recordEmotionDetection(currentTargetEmotion, randomEmotion, confidence, matched);
+            recordEmotionDetection(currentTargetEmotion, detectedEmotion, confidence, matched);
             
             // 更新显示
             const emotionResult = document.getElementById('emotionResult');
             const confidenceResult = document.getElementById('confidenceResult');
             
-            emotionResult.textContent = `${randomEmotion} ${emotionIcons[randomEmotion]}`;
+            emotionResult.textContent = `${detectedEmotion} ${emotionIcons[detectedEmotion]}`;
             confidenceResult.textContent = confidence + "%";
             
             // 检查是否匹配目标情绪
@@ -850,6 +1121,11 @@
             userScore = 0;
             document.getElementById('scoreValue').textContent = '0';
             
+            // 移除之前创建的游戏元素
+            document.querySelectorAll('.manual-selection, .face-container, .situation-container, .eliminate-container, .identification-container').forEach(el => {
+                el.remove();
+            });
+            
             switch(mode) {
                 case GameModes.IMITATION:
                     speak("切换到模仿模式，请模仿目标情绪");
@@ -870,6 +1146,31 @@
                 case GameModes.MEMORY:
                     speak("切换到记忆模式，记住情绪序列");
                     startMemoryMode();
+                    break;
+                    
+                case GameModes.MANUAL:
+                    speak("切换到手动模式，请老师根据学生的表情选择对应的情绪");
+                    startManualMode();
+                    break;
+                    
+                case GameModes.FACE:
+                    speak("切换到表情选择模式，请将正确的表情拖到小女孩脸上");
+                    startFaceMode();
+                    break;
+                    
+                case GameModes.SITUATION:
+                    speak("切换到情境配对模式，请根据情境选择合适的情感反应");
+                    startSituationMode();
+                    break;
+                    
+                case GameModes.IDENTIFY:
+                    speak("切换到情绪指认模式，请识别并命名情绪表情");
+                    startIdentifyMode();
+                    break;
+                    
+                case GameModes.ELIMINATE:
+                    speak("切换到消除坏情绪模式，请点击消除所有负面情绪");
+                    startEliminateMode();
                     break;
             }
         }
@@ -928,7 +1229,7 @@
             }
         }
 
-        // 故事模式
+        // 故事模式 - 修复版本
         function startStoryMode() {
             const stories = [
                 { 
@@ -944,27 +1245,35 @@
                     emotion: "恐惧" 
                 },
                 { 
-                    story: "小丽的朋友分享了美味的蛋糕，她觉得...", 
-                    emotion: "高兴" 
+                    story: "小丽的朋友突然从背后吓她，她感到...", 
+                    emotion: "惊讶" 
                 },
                 { 
-                    story: "小刚的作业被同学撕坏了，他感到...", 
+                    story: "小刚的作业被同学故意撕坏了，他感到...", 
                     emotion: "生气" 
                 },
                 { 
-                    story: "小美在路边看到了一只可爱的小猫，她感到...", 
-                    emotion: "高兴" 
+                    story: "小美闻到了难闻的气味，她感到...", 
+                    emotion: "厌恶" 
                 }
             ];
             
             const randomStory = stories[Math.floor(Math.random() * stories.length)];
             currentTargetEmotion = randomStory.emotion;
             
+            // 更新显示
             updateTargetEmotionDisplay();
-            document.getElementById('emotionResult').textContent = "请做出相应的表情";
+            document.getElementById('emotionResult').textContent = "请听故事并做出相应的表情";
             
-            speak(randomStory.story);
-            startGame();
+            // 讲述故事并开始游戏
+            speak(randomStory.story + " 请做出" + currentTargetEmotion + "的表情");
+            
+            // 延迟2秒后自动开始游戏，给用户准备时间
+            setTimeout(() => {
+                if (!isGameRunning) {
+                    startGame();
+                }
+            }, 2000);
         }
 
         // 记忆模式
@@ -999,7 +1308,7 @@
                     if (!isGameRunning) return;
                     
                     const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-                    const confidence = (Math.random() * 30 + 70).toFixed(1);
+                    const confidence = (Math.random() * 20 + 75).toFixed(1);
                     const matched = (randomEmotion === sequence[currentStep] && confidence > 75);
                     
                     recordEmotionDetection(sequence[currentStep], randomEmotion, confidence, matched);
@@ -1036,6 +1345,407 @@
                     }
                 };
             }, 5000);
+        }
+
+        // 手动模式
+        function startManualMode() {
+            speak("切换到手动模式，请老师根据学生的表情选择对应的情绪");
+            
+            // 停止之前的游戏
+            stopGame();
+            
+            // 设置随机目标情绪
+            changeTargetEmotion();
+            
+            // 更新显示
+            document.getElementById('targetEmotion').textContent = `${currentTargetEmotion} ${emotionIcons[currentTargetEmotion]}`;
+            document.getElementById('emotionResult').textContent = "请观察学生表情并选择";
+            document.getElementById('confidenceResult').textContent = "--%";
+            
+            // 创建手动选择按钮
+            createManualSelectionButtons();
+        }
+
+        // 创建手动选择按钮
+        function createManualSelectionButtons() {
+            const manualDiv = document.createElement('div');
+            manualDiv.className = 'manual-selection';
+            manualDiv.innerHTML = `
+                <h3>👩‍🏫 老师手动选择</h3>
+                <p>请根据学生的实际表情选择对应的情绪：</p>
+                <div class="manual-buttons">
+                    ${emotions.map(emotion => 
+                        `<button class="manual-emotion-btn" onclick="manualEmotionSelect('${emotion}')">
+                         ${emotion} ${emotionIcons[emotion]}
+                         </button>`
+                    ).join('')}
+                </div>
+            `;
+            
+            document.querySelector('.game-area').appendChild(manualDiv);
+        }
+
+        // 手动选择情绪
+        function manualEmotionSelect(selectedEmotion) {
+            // 开始新会话（如果还没有）
+            if (!gameData.currentSession) {
+                startNewSession();
+                isGameRunning = true;
+            }
+            
+            const confidence = "95.0"; // 手动模式置信度设为95%
+            const matched = (selectedEmotion === currentTargetEmotion);
+            
+            // 更新显示
+            document.getElementById('emotionResult').textContent = `${selectedEmotion} ${emotionIcons[selectedEmotion]}`;
+            document.getElementById('confidenceResult').textContent = confidence + "%";
+            
+            // 记录检测结果
+            recordEmotionDetection(currentTargetEmotion, selectedEmotion, confidence, matched);
+            
+            if (matched) {
+                handleSuccess();
+            } else {
+                document.getElementById('emotionResult').style.color = "red";
+                speak(`检测到${selectedEmotion}，但目标是${currentTargetEmotion}，请再试一次`);
+                
+                // 2秒后恢复颜色
+                setTimeout(() => {
+                    document.getElementById('emotionResult').style.color = "";
+                }, 2000);
+            }
+        }
+
+        // ========== 新游戏模式功能 ==========
+
+        // 表情选择模式
+        function startFaceMode() {
+            // 设置随机目标情绪
+            changeTargetEmotion();
+            
+            // 更新显示
+            document.getElementById('targetEmotion').textContent = `请选择${currentTargetEmotion}的表情`;
+            document.getElementById('emotionResult').textContent = "将正确的表情拖到脸上";
+            document.getElementById('confidenceResult').textContent = "--%";
+            
+            // 创建表情选择界面
+            const faceContainer = document.createElement('div');
+            faceContainer.className = 'face-container';
+            faceContainer.innerHTML = `
+                <div class="face-image" id="faceImage">
+                    <div class="face-placeholder">😶</div>
+                </div>
+                <div class="emotion-options" id="emotionOptions">
+                    ${emotions.map(emotion => 
+                        `<div class="emotion-option" draggable="true" data-emotion="${emotion}">
+                         ${emotionIcons[emotion]}
+                         </div>`
+                    ).join('')}
+                </div>
+            `;
+            
+            document.querySelector('.game-area').appendChild(faceContainer);
+            
+            // 设置拖放事件
+            setupDragAndDrop();
+            
+            speak("请将" + currentTargetEmotion + "的表情拖到小女孩脸上");
+        }
+
+        // 设置拖放功能
+        function setupDragAndDrop() {
+            const emotionOptions = document.querySelectorAll('.emotion-option');
+            const faceImage = document.getElementById('faceImage');
+            
+            emotionOptions.forEach(option => {
+                option.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.getAttribute('data-emotion'));
+                    this.classList.add('dragging');
+                });
+                
+                option.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+            });
+            
+            faceImage.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            faceImage.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const emotion = e.dataTransfer.getData('text/plain');
+                handleFaceDrop(emotion);
+            });
+        }
+
+        // 处理表情拖放
+        function handleFaceDrop(emotion) {
+            const faceImage = document.getElementById('faceImage');
+            const matched = (emotion === currentTargetEmotion);
+            
+            // 更新脸部显示
+            faceImage.innerHTML = emotionIcons[emotion];
+            
+            // 记录检测结果
+            recordEmotionDetection(currentTargetEmotion, emotion, 100, matched);
+            
+            if (matched) {
+                userScore += 10;
+                document.getElementById('scoreValue').textContent = userScore;
+                document.getElementById('emotionResult').textContent = `正确！是${currentTargetEmotion}`;
+                speak("太棒了！选择正确！加10分");
+                
+                setTimeout(() => {
+                    startFaceMode(); // 开始新一轮
+                }, 2000);
+            } else {
+                document.getElementById('emotionResult').textContent = `不对哦，应该是${currentTargetEmotion}`;
+                speak(`不对哦，应该是${currentTargetEmotion}，再试一次`);
+                
+                // 2秒后重置
+                setTimeout(() => {
+                    faceImage.innerHTML = '<div class="face-placeholder">😶</div>';
+                    document.getElementById('emotionResult').textContent = "将正确的表情拖到脸上";
+                }, 2000);
+            }
+        }
+
+        // 情境配对模式
+        function startSituationMode() {
+            const situations = [
+                {
+                    situation: "你的好朋友送给你一份生日礼物",
+                    correct: "高兴",
+                    options: ["高兴", "生气", "伤心"]
+                },
+                {
+                    situation: "你最喜欢的玩具被弄坏了",
+                    correct: "伤心",
+                    options: ["高兴", "伤心", "惊讶"]
+                },
+                {
+                    situation: "有人突然从背后吓你",
+                    correct: "惊讶",
+                    options: ["惊讶", "生气", "厌恶"]
+                },
+                {
+                    situation: "有人故意推了你一下",
+                    correct: "生气",
+                    options: ["生气", "高兴", "恐惧"]
+                },
+                {
+                    situation: "你闻到了难闻的气味",
+                    correct: "厌恶",
+                    options: ["厌恶", "高兴", "伤心"]
+                },
+                {
+                    situation: "你在黑暗中听到了奇怪的声音",
+                    correct: "恐惧",
+                    options: ["恐惧", "高兴", "惊讶"]
+                }
+            ];
+            
+            const randomSituation = situations[Math.floor(Math.random() * situations.length)];
+            currentTargetEmotion = randomSituation.correct;
+            
+            // 更新显示
+            document.getElementById('targetEmotion').textContent = "请选择合适的情感反应";
+            document.getElementById('emotionResult').textContent = "阅读情境并选择";
+            document.getElementById('confidenceResult').textContent = "--%";
+            
+            // 创建情境配对界面
+            const situationContainer = document.createElement('div');
+            situationContainer.className = 'situation-container';
+            situationContainer.innerHTML = `
+                <div class="situation-text">${randomSituation.situation}</div>
+                <div class="situation-options">
+                    ${randomSituation.options.map(emotion => 
+                        `<div class="situation-option" onclick="handleSituationChoice('${emotion}')">
+                         ${emotion} ${emotionIcons[emotion]}
+                         </div>`
+                    ).join('')}
+                </div>
+            `;
+            
+            document.querySelector('.game-area').appendChild(situationContainer);
+            
+            speak(randomSituation.situation + "，这种情况下你会感到什么？");
+        }
+
+        // 处理情境选择
+        function handleSituationChoice(emotion) {
+            const matched = (emotion === currentTargetEmotion);
+            
+            // 记录检测结果
+            recordEmotionDetection(currentTargetEmotion, emotion, 100, matched);
+            
+            if (matched) {
+                userScore += 10;
+                document.getElementById('scoreValue').textContent = userScore;
+                document.getElementById('emotionResult').textContent = `正确！这种情况下应该感到${currentTargetEmotion}`;
+                speak("太棒了！理解正确！加10分");
+                
+                setTimeout(() => {
+                    startSituationMode(); // 开始新一轮
+                }, 2000);
+            } else {
+                document.getElementById('emotionResult').textContent = `不太合适，这种情况下通常感到${currentTargetEmotion}`;
+                speak(`不太合适，这种情况下通常感到${currentTargetEmotion}，再试一次`);
+                
+                setTimeout(() => {
+                    startSituationMode(); // 开始新一轮
+                }, 2000);
+            }
+        }
+
+        // 情绪指认模式
+        function startIdentifyMode() {
+            // 随机选择一个情绪
+            const targetEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+            currentTargetEmotion = targetEmotion;
+            
+            // 创建错误选项（排除正确答案）
+            const wrongOptions = emotions.filter(e => e !== targetEmotion)
+                                        .sort(() => 0.5 - Math.random())
+                                        .slice(0, 3);
+            
+            // 合并选项并打乱顺序
+            const allOptions = [targetEmotion, ...wrongOptions].sort(() => 0.5 - Math.random());
+            
+            // 更新显示
+            document.getElementById('targetEmotion').textContent = "这个表情是什么情绪？";
+            document.getElementById('emotionResult').textContent = "请选择正确的情绪名称";
+            document.getElementById('confidenceResult').textContent = "--%";
+            
+            // 创建情绪指认界面
+            const identifyContainer = document.createElement('div');
+            identifyContainer.className = 'identification-container';
+            identifyContainer.innerHTML = `
+                <div class="identification-image">${emotionIcons[targetEmotion]}</div>
+                <div class="identification-options">
+                    ${allOptions.map(emotion => 
+                        `<div class="identification-option" onclick="handleIdentificationChoice('${emotion}')">
+                         ${emotion}
+                         </div>`
+                    ).join('')}
+                </div>
+            `;
+            
+            document.querySelector('.game-area').appendChild(identifyContainer);
+            
+            speak("这个表情是什么情绪？请选择正确的名称");
+        }
+
+        // 处理情绪指认选择
+        function handleIdentificationChoice(emotion) {
+            const matched = (emotion === currentTargetEmotion);
+            
+            // 记录检测结果
+            recordEmotionDetection(currentTargetEmotion, emotion, 100, matched);
+            
+            if (matched) {
+                userScore += 10;
+                document.getElementById('scoreValue').textContent = userScore;
+                document.getElementById('emotionResult').textContent = `正确！这是${currentTargetEmotion}的表情`;
+                speak("太棒了！识别正确！加10分");
+                
+                setTimeout(() => {
+                    startIdentifyMode(); // 开始新一轮
+                }, 2000);
+            } else {
+                document.getElementById('emotionResult').textContent = `不对哦，这是${currentTargetEmotion}的表情`;
+                speak(`不对哦，这是${currentTargetEmotion}的表情，再试一次`);
+                
+                setTimeout(() => {
+                    startIdentifyMode(); // 开始新一轮
+                }, 2000);
+            }
+        }
+
+        // 消除坏情绪模式
+        function startEliminateMode() {
+            // 定义负面情绪
+            const negativeEmotions = ['生气', '伤心', '厌恶', '恐惧'];
+            
+            // 随机选择3-5个负面情绪
+            const emotionsToEliminate = [];
+            const numEmotions = Math.floor(Math.random() * 3) + 3; // 3-5个
+            
+            for (let i = 0; i < numEmotions; i++) {
+                const randomEmotion = negativeEmotions[Math.floor(Math.random() * negativeEmotions.length)];
+                emotionsToEliminate.push(randomEmotion);
+            }
+            
+            // 添加1-2个正面/中性情绪作为干扰项
+            const positiveEmotions = ['高兴', '惊讶', '中性'];
+            const numDistractions = Math.floor(Math.random() * 2) + 1; // 1-2个
+            
+            for (let i = 0; i < numDistractions; i++) {
+                const randomEmotion = positiveEmotions[Math.floor(Math.random() * positiveEmotions.length)];
+                emotionsToEliminate.push(randomEmotion);
+            }
+            
+            // 打乱顺序
+            const shuffledEmotions = emotionsToEliminate.sort(() => 0.5 - Math.random());
+            
+            // 更新显示
+            document.getElementById('targetEmotion').textContent = "请消除所有负面情绪";
+            document.getElementById('emotionResult').textContent = "点击生气、伤心、厌恶和恐惧的情绪";
+            document.getElementById('confidenceResult').textContent = "--%";
+            
+            // 创建消除坏情绪界面
+            const eliminateContainer = document.createElement('div');
+            eliminateContainer.className = 'eliminate-container';
+            eliminateContainer.innerHTML = shuffledEmotions.map(emotion => 
+                `<div class="emotion-bubble" data-emotion="${emotion}" onclick="handleEliminateClick('${emotion}', this)">
+                 ${emotionIcons[emotion]}
+                 </div>`
+            ).join('');
+            
+            document.querySelector('.game-area').appendChild(eliminateContainer);
+            
+            speak("请点击消除所有负面情绪，留下高兴和惊讶的情绪");
+        }
+
+        // 处理消除点击
+        function handleEliminateClick(emotion, element) {
+            const negativeEmotions = ['生气', '伤心', '厌恶', '恐惧'];
+            const isNegative = negativeEmotions.includes(emotion);
+            
+            if (isNegative) {
+                // 正确消除负面情绪
+                element.classList.add('eliminated');
+                speak("很好！消除了" + emotion);
+                
+                // 检查是否所有负面情绪都已消除
+                const remainingBubbles = document.querySelectorAll('.emotion-bubble:not(.eliminated)');
+                const remainingNegative = Array.from(remainingBubbles).filter(bubble => 
+                    negativeEmotions.includes(bubble.getAttribute('data-emotion'))
+                );
+                
+                if (remainingNegative.length === 0) {
+                    // 所有负面情绪都已消除
+                    userScore += 15;
+                    document.getElementById('scoreValue').textContent = userScore;
+                    document.getElementById('emotionResult').textContent = "太棒了！所有负面情绪都已消除";
+                    speak("太棒了！所有负面情绪都已消除！加15分");
+                    
+                    // 记录成功
+                    recordEmotionDetection("消除负面情绪", "成功", 100, true);
+                    
+                    setTimeout(() => {
+                        startEliminateMode(); // 开始新一轮
+                    }, 2000);
+                }
+            } else {
+                // 错误消除正面情绪
+                document.getElementById('emotionResult').textContent = `这是${emotion}，是正面情绪，不需要消除`;
+                speak(`这是${emotion}，是正面情绪，不需要消除`);
+                
+                // 记录错误
+                recordEmotionDetection("消除负面情绪", "错误点击正面情绪", 0, false);
+            }
         }
 
         // 显示情绪提示
@@ -1084,13 +1794,15 @@
                 detectedEmotion: detectedEmotion,
                 confidence: parseFloat(confidence),
                 matched: matched,
-                score: matched ? (currentGameMode === GameModes.MEMORY ? 10 : 10) : 0
+                score: matched ? (currentGameMode === GameModes.MEMORY ? 30 : 
+                                currentGameMode === GameModes.ELIMINATE ? 15 : 10) : 0
             };
             
             gameData.currentSession.detectedEmotions.push(record);
             
             if (matched) {
-                const points = currentGameMode === GameModes.MEMORY ? 10 : 10;
+                const points = currentGameMode === GameModes.MEMORY ? 30 : 
+                             currentGameMode === GameModes.ELIMINATE ? 15 : 10;
                 gameData.currentSession.scores.push(points);
                 gameData.currentSession.totalScore += points;
             }
@@ -1160,6 +1872,11 @@
                 case GameModes.RECOGNITION: return "识别模式";
                 case GameModes.STORY: return "故事模式";
                 case GameModes.MEMORY: return "记忆模式";
+                case GameModes.MANUAL: return "手动模式";
+                case GameModes.FACE: return "表情选择";
+                case GameModes.SITUATION: return "情境配对";
+                case GameModes.IDENTIFY: return "情绪指认";
+                case GameModes.ELIMINATE: return "消除坏情绪";
                 default: return "未知模式";
             }
         }
@@ -1179,18 +1896,6 @@
                 sum + session.detectedEmotions.filter(r => r.matched).length, 0);
             const successRate = totalDetections > 0 ? 
                 (successfulDetections / totalDetections * 100).toFixed(1) : 0;
-            
-            // 按模式统计
-            const modeStats = {};
-            gameData.sessions.forEach(session => {
-                const mode = session.gameMode;
-                if (!modeStats[mode]) {
-                    modeStats[mode] = { sessions: 0, detections: 0, score: 0 };
-                }
-                modeStats[mode].sessions += 1;
-                modeStats[mode].detections += session.detectedEmotions.length;
-                modeStats[mode].score += session.totalScore;
-            });
             
             // 更新统计数据展示
             const statsGrid = document.getElementById('statsGrid');
