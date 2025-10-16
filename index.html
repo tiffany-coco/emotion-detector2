@@ -1,529 +1,708 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>第一阶段：基础感知与识别</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Comic Sans MS', '微软雅黑', sans-serif;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>情绪理解训练系统 · 四阶段架构</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#5b8cff" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1020;        /* 默认深色主题 */
+      --panel:#141a2f;
+      --text:#e9ecff;
+      --muted:#b7c1ffcc;
+      --brand:#5b8cff;
+      --brand-2:#36d6c1;
+      --ok:#21c17a;
+      --bad:#ff5d66;
+      --warn:#f7b955;
+      --card:#0f1530;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --pad: clamp(12px, 1.2vw, 16px);
+      --gap: clamp(10px, 1vw, 14px);
+      --btn: 60px; /* 可触达尺寸 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:"Noto Sans SC", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB"; background:linear-gradient(180deg,#0b1020,#0b1228 50%,#0b1020); color:var(--text);}
+    .app{min-height:100%; display:grid; grid-template-rows:auto 1fr auto;}
+    header{
+      position:sticky; top:0; z-index:20; backdrop-filter:saturate(1.2) blur(8px);
+      background:linear-gradient(180deg, rgba(20,26,47,.92), rgba(20,26,47,.75));
+      border-bottom:1px solid #2a3255; box-shadow:var(--shadow);
+    }
+    .bar{display:flex; align-items:center; gap:10px; padding:10px var(--pad);} 
+    .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px}
+    .logo span{background:linear-gradient(90deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hint{margin-left:auto; display:flex; gap:10px; align-items:center}
+    .hint button{background:#1b2242;color:var(--text); border:1px solid #2c3562; padding:10px 14px; border-radius:12px}
 
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
+    main{padding: var(--pad); max-width:1200px; margin:0 auto; width:100%}
+    .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:var(--gap)}
+    .card{background:linear-gradient(160deg, #121939, #0d1230); border:1px solid #1f2850; border-radius:var(--radius); padding:18px; box-shadow:var(--shadow)}
+    .card h3{margin:0 0 8px 0; font-size:18px}
+    .sub{font-size:13px;color:var(--muted)}
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
+    .row{display:flex; gap:var(--gap); flex-wrap:wrap}
+    .col{flex:1; min-width:260px}
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .toolbar select, .toolbar input[type="range"], .toolbar button{height:44px}
 
-        .header h1 {
-            color: #4a4a4a;
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
+    .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid #2c3562; background:#1b2242; color:var(--text); padding:10px 14px; border-radius:14px; text-decoration:none; font-weight:600; cursor:pointer; min-width:44px}
+    .btn:hover{border-color:#3c4580}
+    .btn.primary{background:linear-gradient(90deg, var(--brand), #6ea3ff); border-color:transparent; color:white}
+    .btn.success{background:linear-gradient(90deg, #21c17a, #37d6a2); border-color:transparent}
+    .btn.warn{background:linear-gradient(90deg, #f7b955, #f39c12); border-color:transparent}
+    .btn.ghost{background:transparent}
 
-        .stage-info {
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+    .stage{display:grid; gap:var(--gap)}
+    .hero{display:flex; align-items:center; gap:14px; padding:14px; border-radius:16px; border:1px dashed #33406b; background:linear-gradient(180deg,#0c1432,#0c1538)}
+    .hero .big{font-size:36px}
 
-        /* 游戏选择 */
-        .game-selection {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
+    .chips{display:flex; gap:10px; flex-wrap:wrap}
+    .chip{border:1px solid #2c3562; padding:8px 12px; border-radius:999px; font-size:13px}
 
-        .game-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+    .game{background:linear-gradient(160deg, #0e1533, #0b1130); border:1px solid #27305a; border-radius:var(--radius); padding:20px; display:grid; gap:14px}
+    .game h4{margin:0}
+    .choices{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px}
+    .choice{font-size:18px; padding:14px; border-radius:14px; border:2px solid #2e396a; background:#151b3b; min-height:56px; display:flex; align-items:center; justify-content:center; user-select:none; touch-action:manipulation}
+    .choice:active{transform:scale(.98)}
+    .choice.good{border-color:#29c07c; background:linear-gradient(180deg,#132a26,#0f1f1b)}
+    .choice.bad{border-color:#ff5d66; background:linear-gradient(180deg,#2a141a,#1b0f11)}
 
-        .game-btn:hover {
-            background: #45a049;
-            transform: translateY(-3px);
-        }
+    .score{display:flex; gap:12px; align-items:center; font-weight:700}
 
-        /* 游戏区域 */
-        .game-area {
-            text-align: center;
-            margin: 30px 0;
-            min-height: 300px;
-        }
+    .drag-wrap{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+    .drag-src, .drag-target{min-height:160px; border:2px dashed #38457a; border-radius:16px; padding:12px; display:flex; gap:10px; flex-wrap:wrap; align-content:flex-start}
+    .draggable{padding:10px 12px; background:#1a2144; border:1px solid #2f3a6b; border-radius:12px; font-size:18px}
+    .drag-target.over{background:rgba(91,140,255,0.08)}
 
-        .target {
-            background: #ff6b6b;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 15px;
-            font-size: 1.5em;
-            margin: 20px 0;
-            display: inline-block;
-        }
+    .sort-list{display:flex; gap:12px; flex-wrap:wrap}
+    .sort-item{padding:10px 12px; border:2px solid #2e396a; border-radius:12px; background:#151b3b; font-size:16px}
 
-        .emoji-large {
-            font-size: 80px;
-            margin: 20px 0;
-        }
+    .badge{padding:4px 8px; border-radius:999px; font-size:12px; background:#1b2242; border:1px solid #2e396a}
 
-        .options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin: 30px 0;
-        }
+    .footer{padding:8px var(--pad); color:var(--muted); font-size:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between}
 
-        .option {
-            background: white;
-            border: 3px solid #4CAF50;
-            border-radius: 15px;
-            padding: 15px 25px;
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 120px;
-        }
+    /* 摄像头 
+    -------------------------------------------------- */
+    .camera{display:grid; gap:10px}
+    video{max-width:100%; width:100%; height:auto; border-radius:14px; border:1px solid #2e396a; background:#000}
 
-        .option:hover {
-            background: #4CAF50;
-            color: white;
-            transform: scale(1.05);
-        }
-
-        /* 控制按钮 */
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .btn {
-            background: #2196F3;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            background: #1976D2;
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: #4CAF50;
-        }
-
-        .btn-danger {
-            background: #f44336;
-        }
-
-        /* 结果反馈 */
-        .feedback {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            font-size: 1.2em;
-            display: none;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
-        }
-
-        .score {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px auto;
-            max-width: 200px;
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-
-        /* 导航 */
-        .navigation {
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .nav-btn {
-            background: #9b59b6;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 0 10px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        @media (max-width: 600px) {
-            .game-selection {
-                grid-template-columns: 1fr;
-            }
-            
-            .options {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .option {
-                width: 100%;
-                max-width: 250px;
-            }
-        }
-    </style>
+    /* 适配 iPad / 移动端 */
+    @media (hover:none){
+      .choice{min-height:64px; font-size:20px}
+      .btn{min-height:52px}
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎵 第一阶段：基础感知与识别</h1>
-            <p>建立情绪名称与表情的初步链接</p>
+  <div class="app" id="app" aria-live="polite">
+    <header>
+      <div class="bar" role="navigation" aria-label="顶栏">
+        <div class="logo" aria-label="情绪理解训练系统">
+          <div class="big" aria-hidden="true">🎯</div>
+          <div>
+            <div>情绪理解训练系统</div>
+            <small class="sub">四阶段 · 自适应 · 本地隐私</small>
+          </div>
         </div>
-
-        <div class="stage-info">
-            <p>这个阶段帮助孩子建立情绪词汇与表情的对应关系，培养基础的情绪识别能力。</p>
+        <div class="hint">
+          <button class="btn" id="btnHome" title="返回主页">🏠 主页</button>
+          <button class="btn" id="btnSettings" title="设置">⚙️ 设置</button>
+          <button class="btn" id="btnReport" title="报告">📈 报告</button>
         </div>
+      </div>
+    </header>
 
-        <!-- 游戏选择 -->
-        <div class="game-selection">
-            <button class="game-btn" onclick="startGame('identification')">情绪指认游戏</button>
-            <button class="game-btn" onclick="startGame('matching')">情绪配对游戏</button>
-            <button class="game-btn" onclick="startGame('imitation')">情绪模仿游戏</button>
+    <main id="main" tabindex="-1">
+      <!-- 内容由 JS 渲染 -->
+    </main>
+
+    <footer class="footer">
+      <div>🛡️ 本地存储 | 无需联网 | 可导出 CSV</div>
+      <div>© <span id="year"></span> 情绪理解训练系统</div>
+    </footer>
+  </div>
+
+  <script>
+  ;(()=>{
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+
+    const state = {
+      profile: { id: 'default', name: '学生A', theme: 'dark', voiceRate: 1.0 },
+      score: {}, // { gameId: { correct, wrong, best, lastPlayed } }
+      stageProgress: { s1:0, s2:0, s3:0, s4:0 },
+      prefs: { sound:true, speech:true, camera:false },
+    };
+
+    const STORAGE_KEY = 'emoTrain.v1';
+    function load(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){ Object.assign(state, JSON.parse(raw)); }
+      }catch(e){ console.warn('load failed', e) }
+    }
+    function save(){
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ console.warn('save failed', e) }
+    }
+
+    // 语音播报
+    function speak(text){
+      if(!state.prefs.speech) return;
+      try{
+        const ut = new SpeechSynthesisUtterance(text);
+        ut.lang = 'zh-CN';
+        ut.rate = state.profile.voiceRate || 1.0;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(ut);
+      }catch(e){ console.warn('speech error', e) }
+    }
+
+    // CSV 导出
+    function exportCSV(){
+      const rows = [['profile','game','correct','wrong','best','lastPlayed']];
+      Object.entries(state.score).forEach(([gameId, s])=>{
+        rows.push([state.profile.name, gameId, s.correct||0, s.wrong||0, s.best||0, s.lastPlayed||'']);
+      });
+      const csv = rows.map(r=>r.join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `report_${Date.now()}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+    }
+
+    // 评分与进度
+    function bumpScore(gameId, ok){
+      const s = state.score[gameId] || (state.score[gameId]={correct:0,wrong:0,best:0,lastPlayed:''});
+      if(ok) s.correct++; else s.wrong++;
+      s.best = Math.max(s.best, s.correct);
+      s.lastPlayed = new Date().toLocaleString();
+      save();
+      updateHeaderMiniReport();
+    }
+
+    function updateHeaderMiniReport(){
+      // 可扩展：顶栏显示今日正确/用时等
+    }
+
+    // 主题切换
+    function applyTheme(){
+      if(state.profile.theme === 'light'){
+        document.documentElement.style.setProperty('--bg', '#f7f8ff');
+        document.documentElement.style.setProperty('--panel', '#ffffff');
+        document.documentElement.style.setProperty('--text', '#0e1020');
+        document.documentElement.style.setProperty('--muted', '#3c4680');
+        document.documentElement.style.setProperty('--card', '#f2f4ff');
+      }else if(state.profile.theme === 'hc'){
+        document.documentElement.style.setProperty('--bg', '#000');
+        document.documentElement.style.setProperty('--panel', '#000');
+        document.documentElement.style.setProperty('--text', '#fff');
+        document.documentElement.style.setProperty('--muted', '#fff');
+        document.documentElement.style.setProperty('--brand', '#fff');
+        document.documentElement.style.setProperty('--brand-2', '#fff');
+        document.documentElement.style.setProperty('--card', '#000');
+      }else{
+        // dark 默认
+        document.documentElement.style.setProperty('--bg', '#0b1020');
+        document.documentElement.style.setProperty('--panel', '#141a2f');
+        document.documentElement.style.setProperty('--text', '#e9ecff');
+        document.documentElement.style.setProperty('--muted', '#b7c1ffcc');
+        document.documentElement.style.setProperty('--card', '#0f1530');
+      }
+    }
+
+    // 路由（hash）
+    const routes = {
+      '': renderHome,
+      '#home': renderHome,
+      '#settings': renderSettings,
+      '#report': renderReport,
+      '#g1': ()=>renderGame1('g1'),           // 情绪指认
+      '#g2': ()=>renderGame2('g2'),           // 情绪配对（拖拽）
+      '#g5': ()=>renderGame5('g5'),           // 强度排序
+      '#g8': ()=>renderGame8('g8'),           // 情绪调节策略
+      '#g12':()=>renderGame12('g12'),         // 消除坏情绪
+      // 其他游戏占位
+      '#g3': ()=>renderComing('g3','情绪模仿（支持摄像头）'),
+      '#g4': ()=>renderComing('g4','情境配对'),
+      '#g6': ()=>renderComing('g6','情绪原因推测'),
+      '#g7': ()=>renderComing('g7','社会情境决策'),
+      '#g9': ()=>renderComing('g9','共情理解'),
+      '#g10':()=>renderComing('g10','情绪记忆'),
+      '#g11':()=>renderComing('g11','情绪绘画表达'),
+    };
+
+    function router(){
+      const hash = location.hash || '#home';
+      (routes[hash]||renderHome)();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    // UI 片段
+    function stageCard(icon, title, items){
+      return `<div class="card stage" role="group" aria-label="${title}">
+        <div class="hero"><div class="big">${icon}</div><div>
+          <h3>${title}</h3>
+          <div class="sub">循序渐进 · 难度自适应</div>
+        </div></div>
+        <div class="grid">
+          ${items.map(x=>`<div class="game" aria-live="polite">
+            <h4>${x.idx}. ${x.name}</h4>
+            <div class="chips"><span class="chip">${x.tag}</span><span class="chip">最佳：${(state.score[x.hash]?.best)||0}</span></div>
+            <div class="toolbar">
+              <button class="btn primary" onclick="location.hash='${x.hash}'">进入训练</button>
+              <small class="sub">最近：${(state.score[x.hash]?.lastPlayed)||'—'}</small>
+            </div>
+          </div>`).join('')}
         </div>
+      </div>`
+    }
 
-        <!-- 游戏区域 -->
-        <div class="game-area" id="gameArea">
-            <p>请选择一个游戏开始</p>
-        </div>
+    function renderHome(){
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="row" aria-label="概览">
+          <div class="col card">
+            <h3>欢迎，${state.profile.name}</h3>
+            <p class="sub">选择一个阶段开始训练。系统会记录你的得分与最佳成绩，并可导出数据。</p>
+            <div class="chips">
+              <span class="chip">语音：${state.prefs.speech? '开启' : '关闭'}</span>
+              <span class="chip">相机：${state.prefs.camera? '允许' : '禁止'}</span>
+              <span class="chip">主题：${state.profile.theme}</span>
+            </div>
+            <div style="margin-top:12px" class="toolbar">
+              <button class="btn" onclick="location.hash='#settings'">⚙️ 快速设置</button>
+              <button class="btn" onclick="location.hash='#report'">📈 查看报告</button>
+              <button class="btn" onclick="(${exportCSV.toString()})()">🧾 导出CSV</button>
+            </div>
+          </div>
+        </section>
+        <section class="stage-list" aria-label="阶段列表" style="display:grid; gap:16px; margin-top:12px">
+          ${stageCard('🎵','第一阶段：基础感知与识别',[
+            {idx:1, name:'情绪指认游戏', tag:'2→4 选项 · 语音提示', hash:'#g1'},
+            {idx:2, name:'情绪配对游戏', tag:'拖拽 · 泛化', hash:'#g2'},
+            {idx:3, name:'情绪模仿游戏', tag:'镜像 · 教师评价', hash:'#g3'},
+          ])}
+          ${stageCard('📚','第二阶段：情境理解与应用',[
+            {idx:4, name:'情境配对游戏', tag:'图片+文字 · 因果解释', hash:'#g4'},
+            {idx:5, name:'情绪强度排序', tag:'轻→强 · 排序', hash:'#g5'},
+            {idx:6, name:'情绪原因推测', tag:'反推 · 干扰选项', hash:'#g6'},
+          ])}
+          ${stageCard('👥','第三阶段：社会认知与调节',[
+            {idx:7, name:'社会情境决策', tag:'后果预测', hash:'#g7'},
+            {idx:8, name:'情绪调节策略', tag:'呼吸/数数/求助/绘画', hash:'#g8'},
+            {idx:9, name:'共情理解游戏', tag:'观点采择', hash:'#g9'},
+          ])}
+          ${stageCard('🌟','第四阶段：综合应用与泛化',[
+            {idx:10, name:'情绪记忆游戏', tag:'序列记忆', hash:'#g10'},
+            {idx:11, name:'情绪绘画表达', tag:'画布工具', hash:'#g11'},
+            {idx:12, name:'消除坏情绪游戏', tag:'快速识别 · 强化', hash:'#g12'},
+          ])}
+        </section>
+      `;
+      $('#btnHome').disabled = true; $('#btnSettings').disabled=false; $('#btnReport').disabled=false;
+      speak('欢迎来到情绪理解训练系统。请选择一个游戏开始训练。');
+    }
 
-        <!-- 控制按钮 -->
-        <div class="controls">
-            <button class="btn btn-success" onclick="nextRound()">下一题</button>
-            <button class="btn" onclick="showManualJudgment()">手动判断</button>
-            <button class="btn" onclick="exportData()">导出数据</button>
-            <button class="btn btn-danger" onclick="resetGame()">重新开始</button>
-        </div>
-
-        <!-- 分数显示 -->
-        <div class="score">
-            得分: <span id="score">0</span>
-        </div>
-
-        <!-- 导航 -->
-        <div class="navigation">
-            <a href="stage2.html" class="nav-btn">进入第二阶段 →</a>
-        </div>
-    </div>
-
-    <script>
-        // 情绪库
-        const emotions = ['高兴', '伤心', '惊讶', '生气', '厌恶', '恐惧'];
-        const emotionIcons = {
-            '高兴': '😊',
-            '伤心': '😢', 
-            '惊讶': '😲',
-            '生气': '😠',
-            '厌恶': '🤢',
-            '恐惧': '😨'
-        };
-
-        // 游戏状态
-        let currentGame = null;
-        let currentTarget = null;
-        let score = 0;
-        let gameData = [];
-
-        // 开始游戏
-        function startGame(gameType) {
-            currentGame = gameType;
-            resetGameArea();
-            
-            switch(gameType) {
-                case 'identification':
-                    startIdentificationGame();
-                    break;
-                case 'matching':
-                    startMatchingGame();
-                    break;
-                case 'imitation':
-                    startImitationGame();
-                    break;
-            }
-        }
-
-        // 情绪指认游戏
-        function startIdentificationGame() {
-            currentTarget = emotions[Math.floor(Math.random() * emotions.length)];
-            
-            let options = [currentTarget];
-            while (options.length < 4) {
-                const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-                if (!options.includes(randomEmotion)) {
-                    options.push(randomEmotion);
-                }
-            }
-            
-            options = shuffleArray(options);
-            
-            const gameArea = document.getElementById('gameArea');
-            gameArea.innerHTML = `
-                <div class="target">这是什么情绪？ ${emotionIcons[currentTarget]}</div>
-                <div class="options" id="optionsContainer"></div>
-            `;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            options.forEach(emotion => {
-                const option = document.createElement('div');
-                option.className = 'option';
-                option.textContent = emotion;
-                option.onclick = () => checkAnswer(emotion);
-                optionsContainer.appendChild(option);
-            });
-        }
-
-        // 情绪配对游戏
-        function startMatchingGame() {
-            currentTarget = emotions[Math.floor(Math.random() * emotions.length)];
-            
-            let options = [
-                { emotion: currentTarget, icon: emotionIcons[currentTarget] },
-                { emotion: currentTarget, icon: getSimilarEmoji(currentTarget) },
-                { emotion: currentTarget, icon: getSimilarEmoji(currentTarget) }
-            ];
-            
-            let differentEmotion;
-            do {
-                differentEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-            } while (differentEmotion === currentTarget);
-            
-            options.push({ emotion: differentEmotion, icon: emotionIcons[differentEmotion] });
-            
-            options = shuffleArray(options);
-            
-            const gameArea = document.getElementById('gameArea');
-            gameArea.innerHTML = `
-                <div class="target">请找出所有${currentTarget}的表情</div>
-                <div class="options" id="optionsContainer"></div>
-            `;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            options.forEach(item => {
-                const option = document.createElement('div');
-                option.className = 'option';
-                option.innerHTML = item.icon;
-                option.onclick = () => checkMatchingAnswer(item.emotion === currentTarget);
-                optionsContainer.appendChild(option);
-            });
-        }
-
-        // 情绪模仿游戏
-        function startImitationGame() {
-            currentTarget = emotions[Math.floor(Math.random() * emotions.length)];
-            
-            const hints = {
-                '高兴': "嘴角上扬，眼睛眯起",
-                '伤心': "嘴角下垂，眼眶湿润", 
-                '惊讶': "眼睛睁大，嘴巴张开",
-                '生气': "眉头紧锁，嘴角下拉",
-                '厌恶': "鼻子皱起，嘴角歪斜",
-                '恐惧': "眼睛睁大，嘴巴张开"
-            };
-            
-            const gameArea = document.getElementById('gameArea');
-            gameArea.innerHTML = `
-                <div class="target">请模仿这个表情：${emotionIcons[currentTarget]} ${currentTarget}</div>
-                <div class="emoji-large">${emotionIcons[currentTarget]}</div>
-                <div style="margin: 20px 0; font-size: 1.2em; color: #666;">
-                    ${hints[currentTarget]}
+    function renderSettings(){
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="card" aria-label="设置">
+          <h3>⚙️ 设置</h3>
+          <div class="row" style="margin-top:8px">
+            <div class="col">
+              <div class="game">
+                <h4>个人信息</h4>
+                <label class="sub">姓名/昵称</label>
+                <input id="nameInput" type="text" value="${state.profile.name}" style="height:44px;border-radius:12px;border:1px solid #2c3562;background:#0f1530;color:var(--text);padding:0 12px"/>
+                <div class="chips">
+                  <span class="badge">ID: ${state.profile.id}</span>
                 </div>
-                <p style="margin: 20px 0;">做出表情后，请老师点击"手动判断"按钮</p>
-            `;
-        }
+                <div class="toolbar">
+                  <button class="btn success" id="saveProfile">保存</button>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="game">
+                <h4>偏好</h4>
+                <div class="toolbar">
+                  <label><input type="checkbox" id="speechChk" ${state.prefs.speech?'checked':''}/> 语音播报</label>
+                  <label><input type="checkbox" id="soundChk" ${state.prefs.sound?'checked':''}/> 提示音</label>
+                  <label><input type="checkbox" id="camChk" ${state.prefs.camera?'checked':''}/> 摄像头</label>
+                </div>
+                <label class="sub">语速：<span id="rateVal">${state.profile.voiceRate.toFixed(1)}</span></label>
+                <input id="rateRange" type="range" min="0.6" max="1.6" step="0.1" value="${state.profile.voiceRate}" style="width:100%"/>
+                <label class="sub">主题</label>
+                <div class="toolbar">
+                  <button class="btn" data-theme="dark">🌙 深色</button>
+                  <button class="btn" data-theme="light">☀️ 浅色</button>
+                  <button class="btn" data-theme="hc">🟡 高对比</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="toolbar" style="margin-top:10px">
+            <button class="btn" onclick="(${exportCSV.toString()})()">🧾 导出CSV</button>
+            <button class="btn warn" id="resetAll">重置全部数据</button>
+          </div>
+        </section>
+      `;
+      $('#btnHome').disabled=false; $('#btnSettings').disabled=true; $('#btnReport').disabled=false;
 
-        // 检查答案
-        function checkAnswer(selectedEmotion) {
-            const isCorrect = selectedEmotion === currentTarget;
-            
-            gameData.push({
-                game: currentGame,
-                target: currentTarget,
-                selected: selectedEmotion,
-                correct: isCorrect,
-                timestamp: new Date().toISOString()
-            });
-            
-            showFeedback(isCorrect, isCorrect ? 
-                `太棒了！答对了！这是${currentTarget}` : 
-                `不对哦，这是${currentTarget}`);
-            
-            if (isCorrect) {
-                score += 10;
-                document.getElementById('score').textContent = score;
-            }
-        }
+      $('#saveProfile').onclick = ()=>{ state.profile.name = $('#nameInput').value.trim()||state.profile.name; save(); speak('已保存。'); };
+      $('#speechChk').onchange = e=>{ state.prefs.speech = e.target.checked; save(); };
+      $('#soundChk').onchange = e=>{ state.prefs.sound = e.target.checked; save(); };
+      $('#camChk').onchange = e=>{ state.prefs.camera = e.target.checked; save(); };
+      $('#rateRange').oninput = e=>{ state.profile.voiceRate = parseFloat(e.target.value); $('#rateVal').textContent = state.profile.voiceRate.toFixed(1); };
+      $$('.toolbar .btn[data-theme]').forEach(b=> b.onclick = ()=>{ state.profile.theme = b.dataset.theme; applyTheme(); save(); });
+      $('#resetAll').onclick = ()=>{ if(confirm('确定要重置全部进度与设置？')){ localStorage.removeItem(STORAGE_KEY); location.reload(); } };
+    }
 
-        // 检查配对答案
-        function checkMatchingAnswer(isCorrect) {
-            gameData.push({
-                game: currentGame,
-                target: currentTarget,
-                selected: isCorrect ? "正确配对" : "错误配对",
-                correct: isCorrect,
-                timestamp: new Date().toISOString()
-            });
-            
-            showFeedback(isCorrect, isCorrect ? 
-                `太棒了！这是${currentTarget}的表情` : 
-                `不对哦，这不是${currentTarget}的表情`);
-            
-            if (isCorrect) {
-                score += 10;
-                document.getElementById('score').textContent = score;
-            }
-        }
+    function renderReport(){
+      const el = $('#main');
+      const list = Object.entries(state.score);
+      const totalCorrect = list.reduce((a,[,s])=>a+(s.correct||0),0);
+      const totalWrong = list.reduce((a,[,s])=>a+(s.wrong||0),0);
+      el.innerHTML = `
+        <section class="card">
+          <h3>📈 学习报告</h3>
+          <div class="chips">
+            <span class="chip">总正确：${totalCorrect}</span>
+            <span class="chip">总错误：${totalWrong}</span>
+            <span class="chip">游戏数量：${list.length}</span>
+          </div>
+          <div style="margin-top:10px">
+            <table style="width:100%; border-collapse:collapse; font-size:14px">
+              <thead><tr>
+                <th style="text-align:left; border-bottom:1px solid #2c3562; padding:8px">游戏</th>
+                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">正确</th>
+                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">错误</th>
+                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">最佳</th>
+                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">最近</th>
+              </tr></thead>
+              <tbody>
+              ${list.map(([id,s])=>`<tr>
+                <td style="padding:8px; border-bottom:1px dashed #2c3562">${id}</td>
+                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.correct||0}</td>
+                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.wrong||0}</td>
+                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.best||0}</td>
+                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.lastPlayed||'—'}</td>
+              </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="toolbar" style="margin-top:12px">
+            <button class="btn" onclick="(${exportCSV.toString()})()">🧾 导出CSV</button>
+            <button class="btn" onclick="location.hash='#home'">返回</button>
+          </div>
+        </section>
+      `;
+      $('#btnHome').disabled=false; $('#btnSettings').disabled=false; $('#btnReport').disabled=true;
+    }
 
-        // 显示反馈
-        function showFeedback(isSuccess, message) {
-            const oldFeedback = document.querySelector('.feedback');
-            if (oldFeedback) {
-                oldFeedback.remove();
-            }
-            
-            const feedback = document.createElement('div');
-            feedback.className = `feedback ${isSuccess ? 'success' : 'error'}`;
-            feedback.textContent = message;
-            
-            document.getElementById('gameArea').appendChild(feedback);
-            feedback.style.display = 'block';
-        }
+    function renderComing(gameId, title){
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="card">
+          <h3>⏳ ${title}</h3>
+          <p class="sub">该游戏的占位界面。你可以先开展其他已实现的训练：#g1、#g2、#g5、#g8、#g12。</p>
+          <div class="toolbar"><button class="btn" onclick="location.hash='#home'">返回主页</button></div>
+        </section>
+      `;
+    }
 
-        // 下一题
-        function nextRound() {
-            if (currentGame) {
-                startGame(currentGame);
-            }
-        }
+    // Game 1: 情绪指认（2→4 选项 · 语音）
+    function renderGame1(gameId){
+      const all = [
+        {emo:'高兴', icon:'😊'},
+        {emo:'伤心', icon:'😢'},
+        {emo:'生气', icon:'😠'},
+        {emo:'害怕', icon:'😨'},
+      ];
+      // 难度根据历史成绩调整（2~4 选项）
+      const s = state.score[gameId]||{};
+      const level = Math.min(4, 2 + Math.floor((s.best||0)/5));
+      const pool = all.slice(0, level);
+      const ans = pool[Math.floor(Math.random()*pool.length)];
+      const choices = [...pool].sort(()=>Math.random()-0.5);
 
-        // 手动判断
-        function showManualJudgment() {
-            if (!currentGame || !currentTarget) {
-                alert("请先开始一个游戏");
-                return;
-            }
-            
-            const manualChoice = prompt(`请手动判断正确情绪（当前目标: ${currentTarget}）:\n${emotions.join(', ')}`);
-            if (manualChoice && emotions.includes(manualChoice)) {
-                checkAnswer(manualChoice);
-            } else if (manualChoice) {
-                alert("请输入有效的情绪名称");
-            }
-        }
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="game" aria-label="情绪指认">
+          <div class="hero"><div class="big" aria-hidden="true">🎵</div><div>
+            <h3>1. 这是什么情绪？</h3>
+            <div class="sub">难度：${level} 选项</div>
+          </div></div>
+          <div class="card" style="text-align:center">
+            <div style="font-size:80px; line-height:1" aria-label="目标表情">${ans.icon}</div>
+            <div class="sub" style="margin-top:6px">请指认：这是什么情绪？</div>
+          </div>
+          <div class="choices" role="list" aria-label="选择区">
+            ${choices.map(c=>`<button class="choice" role="listitem" data-v="${c.emo}">${c.emo}</button>`).join('')}
+          </div>
+          <div class="row" style="align-items:center; justify-content:space-between">
+            <div class="score">✅ ${(s.correct||0)} &nbsp; ❌ ${(s.wrong||0)} &nbsp; 🏆 最佳 ${(s.best||0)}</div>
+            <div class="toolbar">
+              <button class="btn" onclick="location.hash='#home'">返回</button>
+              <button class="btn primary" id="nextQ">下一题</button>
+            </div>
+          </div>
+        </section>
+      `;
+      speak('这是什么情绪？');
 
-        // 导出数据
-        function exportData() {
-            if (gameData.length === 0) {
-                alert("还没有游戏数据可以导出");
-                return;
-            }
-            
-            let csvContent = "时间,游戏类型,目标情绪,选择情绪,是否正确\n";
-            gameData.forEach(record => {
-                csvContent += `"${record.timestamp}","${record.game}","${record.target}","${record.selected}","${record.correct ? '是' : '否'}"\n`;
-            });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `第一阶段数据_${new Date().getTime()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+      $$('.choice').forEach(b=> b.onclick = ()=>{
+        const ok = b.dataset.v === ans.emo;
+        b.classList.add(ok?'good':'bad');
+        bumpScore(gameId, ok);
+        if(ok) speak(`太棒了！这是${ans.emo}`); else speak(`再想想，这是${ans.emo}哦`);
+      });
+      $('#nextQ').onclick = ()=> renderGame1(gameId);
+    }
 
-        // 重置游戏
-        function resetGame() {
-            currentGame = null;
-            currentTarget = null;
-            score = 0;
-            gameData = [];
-            document.getElementById('score').textContent = '0';
-            resetGameArea();
-        }
+    // Game 2: 情绪配对（拖拽）
+    function renderGame2(gameId){
+      const targets = ['高兴','伤心','生气','害怕'];
+      const emoIcon = {高兴:'😊',伤心:'😢',生气:'😠',害怕:'😨'};
+      // 难度：2→4 类别
+      const s = state.score[gameId]||{};
+      const k = Math.min(4, 2 + Math.floor((s.best||0)/4));
+      const cats = targets.slice(0,k);
+      const samples = cats.flatMap(c=>[
+        {emo:c, label:`${emoIcon[c]} ${c}①`},
+        {emo:c, label:`${emoIcon[c]} ${c}②`}
+      ]).sort(()=>Math.random()-0.5);
 
-        // 重置游戏区域
-        function resetGameArea() {
-            document.getElementById('gameArea').innerHTML = '<p>请选择一个游戏开始</p>';
-        }
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="game" aria-label="情绪配对">
+          <div class="hero"><div class="big" aria-hidden="true">🎵</div><div>
+            <h3>2. 把相同情绪拖到对应框内</h3>
+            <div class="sub">训练情绪泛化能力 · 难度：${k} 类别</div>
+          </div></div>
+          <div class="drag-wrap">
+            <div class="drag-src" id="dragSrc" aria-label="待分类">
+              ${samples.map((s,i)=>`<div class="draggable" draggable="true" data-emo="${s.emo}" aria-grabbed="false" role="button">${s.label}</div>`).join('')}
+            </div>
+            <div class="drag-targets">
+              ${cats.map(c=>`<div class="drag-target" data-emo="${c}" aria-label="目标 ${c}"><div class="sub">目标情绪：${c}</div></div>`).join('')}
+            </div>
+          </div>
+          <div class="toolbar" style="justify-content:space-between">
+            <div class="score">✅ ${(s.correct||0)} &nbsp; ❌ ${(s.wrong||0)} &nbsp; 🏆 最佳 ${(s.best||0)}</div>
+            <div>
+              <button class="btn" onclick="location.hash='#home'">返回</button>
+              <button class="btn primary" id="nextQ">下一轮</button>
+            </div>
+          </div>
+        </section>
+      `;
 
-        // 工具函数
-        function shuffleArray(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
+      const onDragStart = (e)=>{ e.dataTransfer.setData('text/plain', e.target.dataset.emo); e.dataTransfer.dropEffect='move'; e.target.classList.add('dragging'); };
+      const onDragEnd = (e)=>{ e.target.classList.remove('dragging'); };
+      const onDragOver = (e)=>{ e.preventDefault(); e.currentTarget.classList.add('over'); };
+      const onLeave = (e)=>{ e.currentTarget.classList.remove('over'); };
+      const onDrop = (e)=>{
+        e.preventDefault();
+        const expect = e.currentTarget.dataset.emo;
+        const dragging = $('.dragging');
+        if(!dragging) return;
+        const got = dragging.dataset.emo;
+        if(expect === got){
+          e.currentTarget.appendChild(dragging);
+          dragging.classList.remove('dragging');
+          bumpScore(gameId, true);
+          speak(`正确，${expect}`);
+        }else{
+          bumpScore(gameId, false);
+          speak(`不是这里，试试别的目标`);
         }
+        e.currentTarget.classList.remove('over');
+      };
 
-        function getSimilarEmoji(emotion) {
-            const variations = {
-                '高兴': ['😄', '😃', '😀', '😊', '😁'],
-                '伤心': ['😢', '😭', '😔', '😞', '😥'],
-                '惊讶': ['😲', '😮', '😯', '🙀', '😧'],
-                '生气': ['😠', '😡', '👿', '💢', '😤'],
-                '厌恶': ['🤢', '🤮', '😷', '😖', '😣'],
-                '恐惧': ['😨', '😰', '😱', '🙀', '😬']
-            };
-            
-            const options = variations[emotion] || [emotionIcons[emotion]];
-            return options[Math.floor(Math.random() * options.length)];
+      $$('.draggable').forEach(d=>{ d.addEventListener('dragstart', onDragStart); d.addEventListener('dragend', onDragEnd); });
+      $$('.drag-target').forEach(t=>{
+        t.addEventListener('dragover', onDragOver);
+        t.addEventListener('dragleave', onLeave);
+        t.addEventListener('drop', onDrop);
+      });
+      $('#nextQ').onclick = ()=> renderGame2(gameId);
+    }
+
+    // Game 5: 情绪强度排序（轻→强）
+    function renderGame5(gameId){
+      const emo = '生气';
+      const items = [
+        {key:'轻微', label:'轻微生气 😕'},
+        {key:'中等', label:'中等生气 😠'},
+        {key:'强烈', label:'非常生气 🤬'},
+      ].sort(()=>Math.random()-0.5);
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="game" aria-label="情绪强度排序">
+          <div class="hero"><div class="big" aria-hidden="true">📚</div><div>
+            <h3>5. 请按从轻微到强烈的顺序排列「${emo}」</h3>
+            <div class="sub">拖动卡片排序后点击校验</div>
+          </div></div>
+          <div class="sort-list" id="sortList">
+            ${items.map(i=>`<div class="sort-item" draggable="true" data-key="${i.key}">${i.label}</div>`).join('')}
+          </div>
+          <div class="toolbar" style="justify-content:space-between">
+            <div class="score">✅ ${(state.score[gameId]?.correct||0)} &nbsp; ❌ ${(state.score[gameId]?.wrong||0)} &nbsp; 🏆 最佳 ${(state.score[gameId]?.best||0)}</div>
+            <div>
+              <button class="btn" onclick="location.hash='#home'">返回</button>
+              <button class="btn primary" id="checkOrder">校验</button>
+            </div>
+          </div>
+        </section>
+      `;
+
+      // 简易拖拽排序（同容器）
+      const list = $('#sortList');
+      let dragEl = null;
+      list.addEventListener('dragstart', e=>{ dragEl = e.target; e.dataTransfer.effectAllowed='move'; });
+      list.addEventListener('dragover', e=>{
+        e.preventDefault();
+        const after = Array.from(list.children).find(ch=>{
+          const rect= ch.getBoundingClientRect();
+          return e.clientX < rect.left + rect.width/2;
+        });
+        if(after) list.insertBefore(dragEl, after); else list.appendChild(dragEl);
+      });
+      list.addEventListener('dragend', ()=> dragEl=null);
+
+      $('#checkOrder').onclick = ()=>{
+        const keys = $$('.sort-item', list).map(el=>el.dataset.key);
+        const ok = JSON.stringify(keys) === JSON.stringify(['轻微','中等','强烈']);
+        bumpScore(gameId, ok);
+        if(ok){ speak('正确，从轻微到强烈。'); } else { speak('顺序不对，再试一次。'); }
+      };
+    }
+
+    // Game 8: 情绪调节策略
+    function renderGame8(gameId){
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="game" aria-label="情绪调节策略">
+          <div class="hero"><div class="big" aria-hidden="true">👥</div><div>
+            <h3>8. 我现在很生气，可以怎么做？</h3>
+            <div class="sub">选择一个策略并跟随提示执行</div>
+          </div></div>
+          <div class="choices" id="strats">
+            <button class="choice" data-act="breath">💨 深呼吸5次</button>
+            <button class="choice" data-act="count">🔢 从1数到10</button>
+            <button class="choice" data-act="adult">👥 找大人帮忙</button>
+            <button class="choice" data-act="draw">🎨 画画表达情绪</button>
+          </div>
+          <div id="coach" class="card" aria-live="polite"><div class="sub">选择一个策略，系统会给予分步指导。</div></div>
+          <div class="toolbar" style="justify-content:space-between">
+            <div class="score">✅ ${(state.score[gameId]?.correct||0)} &nbsp; ❌ ${(state.score[gameId]?.wrong||0)} &nbsp; 🏆 最佳 ${(state.score[gameId]?.best||0)}</div>
+            <div>
+              <button class="btn" onclick="location.hash='#home'">返回</button>
+            </div>
+          </div>
+        </section>
+      `;
+      const coach = $('#coach');
+      $('#strats').onclick = (e)=>{
+        const b = e.target.closest('.choice'); if(!b) return;
+        const act = b.dataset.act;
+        if(act==='breath'){
+          coach.innerHTML = `<h4>练习：深呼吸</h4><ol><li>吸气 4 秒</li><li>屏息 2 秒</li><li>呼气 4 秒</li><li>重复 5 次</li></ol>`;
+          speak('跟着我，一起做五次深呼吸。吸气四秒，停两秒，呼气四秒。');
+          bumpScore(gameId, true);
+        }else if(act==='count'){
+          coach.innerHTML = `<h4>练习：数数</h4><p>慢慢从 1 数到 10，配合均匀呼吸。</p>`;
+          speak('慢慢从一数到十。'); bumpScore(gameId, true);
+        }else if(act==='adult'){
+          coach.innerHTML = `<h4>求助：找大人</h4><p>现在请找到老师或家长，清楚地描述发生了什么和你的感受。</p>`;
+          speak('去找大人帮忙，把发生的事情和你的感受说清楚。'); bumpScore(gameId, true);
+        }else if(act==='draw'){
+          coach.innerHTML = `<h4>表达：画画</h4><p>拿起纸笔，把你的感受画出来，画完后给老师看看。</p>`;
+          speak('拿起纸笔，把你的感受画出来。'); bumpScore(gameId, true);
         }
-    </script>
+      };
+    }
+
+    // Game 12: 消除坏情绪（点击负面泡泡）
+    function renderGame12(gameId){
+      const pos = ['😊','🥰','😍','😄'];
+      const neg = ['😠','😢','😨','😞'];
+      const pool = [...pos, ...neg].sort(()=>Math.random()-0.5).slice(0,8);
+      const need = pool.filter(x=>neg.includes(x)).length;
+      const el = $('#main');
+      el.innerHTML = `
+        <section class="game" aria-label="消除坏情绪">
+          <div class="hero"><div class="big" aria-hidden="true">🌟</div><div>
+            <h3>12. 点击消除所有负面情绪</h3>
+            <div class="sub">已消除：<span id="killed">0</span> / ${need} 个负面情绪</div>
+          </div></div>
+          <div class="choices" id="bubbles" style="grid-template-columns:repeat(auto-fit,minmax(90px,1fr))">
+            ${pool.map((e,i)=>`<button class="choice" data-emo="${e}" style="font-size:32px; min-height:80px">${e}</button>`).join('')}
+          </div>
+          <div class="toolbar" style="justify-content:space-between">
+            <div class="score">✅ ${(state.score[gameId]?.correct||0)} &nbsp; ❌ ${(state.score[gameId]?.wrong||0)} &nbsp; 🏆 最佳 ${(state.score[gameId]?.best||0)}</div>
+            <div>
+              <button class="btn" onclick="location.hash='#home'">返回</button>
+              <button class="btn primary" id="again">再来一轮</button>
+            </div>
+          </div>
+        </section>
+      `;
+
+      let killed = 0;
+      $('#bubbles').onclick = (e)=>{
+        const b = e.target.closest('.choice'); if(!b) return;
+        const emo = b.dataset.emo;
+        const isNeg = ['😠','😢','😨','😞'].includes(emo);
+        if(isNeg){
+          b.classList.add('good');
+          b.disabled = true;
+          killed++; $('#killed').textContent = killed;
+          bumpScore(gameId, true);
+          if(killed===need){ speak('做得好！你清除了所有负面情绪。'); }
+        }else{
+          b.classList.add('bad');
+          bumpScore(gameId, false);
+          speak('这是积极情绪，留下它。');
+          setTimeout(()=> b.classList.remove('bad'), 500);
+        }
+      };
+      $('#again').onclick = ()=> renderGame12(gameId);
+    }
+
+    // 摄像头（供 g3 等使用）
+    async function startCamera(videoEl){
+      if(!state.prefs.camera){ alert('未在设置中开启摄像头权限'); return; }
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+        videoEl.srcObject = stream; await videoEl.play();
+      }catch(e){ alert('无法打开摄像头：'+e.message) }
+    }
+
+    // 事件绑定 & 初始化
+    function bindGlobals(){
+      $('#btnHome').onclick = ()=> location.hash = '#home';
+      $('#btnSettings').onclick = ()=> location.hash = '#settings';
+      $('#btnReport').onclick = ()=> location.hash = '#report';
+      window.addEventListener('hashchange', router);
+      $('#year').textContent = new Date().getFullYear();
+    }
+
+    // 启动
+    load(); applyTheme(); bindGlobals(); router();
+  })();
+  </script>
 </body>
 </html>
