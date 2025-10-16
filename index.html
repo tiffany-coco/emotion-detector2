@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情绪识别小助手 - 特殊教育教具</title>
+    <title>第一阶段：基础感知与识别</title>
     <style>
         * {
             margin: 0;
@@ -39,10 +39,18 @@
             margin-bottom: 10px;
         }
 
+        .stage-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         /* 游戏选择 */
         .game-selection {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin: 20px 0;
         }
@@ -174,6 +182,25 @@
             font-weight: bold;
         }
 
+        /* 导航 */
+        .navigation {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
         @media (max-width: 600px) {
             .game-selection {
                 grid-template-columns: 1fr;
@@ -194,16 +221,19 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎭 情绪识别小助手</h1>
-            <p>特殊教育互动教学工具</p>
+            <h1>🎵 第一阶段：基础感知与识别</h1>
+            <p>建立情绪名称与表情的初步链接</p>
+        </div>
+
+        <div class="stage-info">
+            <p>这个阶段帮助孩子建立情绪词汇与表情的对应关系，培养基础的情绪识别能力。</p>
         </div>
 
         <!-- 游戏选择 -->
         <div class="game-selection">
             <button class="game-btn" onclick="startGame('identification')">情绪指认游戏</button>
             <button class="game-btn" onclick="startGame('matching')">情绪配对游戏</button>
-            <button class="game-btn" onclick="startGame('situation')">情境配对游戏</button>
-            <button class="game-btn" onclick="startGame('eliminate')">消除坏情绪</button>
+            <button class="game-btn" onclick="startGame('imitation')">情绪模仿游戏</button>
         </div>
 
         <!-- 游戏区域 -->
@@ -223,6 +253,11 @@
         <div class="score">
             得分: <span id="score">0</span>
         </div>
+
+        <!-- 导航 -->
+        <div class="navigation">
+            <a href="stage2.html" class="nav-btn">进入第二阶段 →</a>
+        </div>
     </div>
 
     <script>
@@ -236,19 +271,6 @@
             '厌恶': '🤢',
             '恐惧': '😨'
         };
-
-        // 负面情绪（用于消除游戏）
-        const negativeEmotions = ['生气', '伤心', '厌恶', '恐惧'];
-
-        // 情境库
-        const situations = [
-            { situation: "收到生日礼物", emotion: "高兴" },
-            { situation: "玩具被弄坏了", emotion: "伤心" },
-            { situation: "突然听到巨响", emotion: "惊讶" },
-            { situation: "被同学推了一下", emotion: "生气" },
-            { situation: "闻到难闻气味", emotion: "厌恶" },
-            { situation: "在黑暗中独处", emotion: "恐惧" }
-        ];
 
         // 游戏状态
         let currentGame = null;
@@ -268,21 +290,16 @@
                 case 'matching':
                     startMatchingGame();
                     break;
-                case 'situation':
-                    startSituationGame();
-                    break;
-                case 'eliminate':
-                    startEliminateGame();
+                case 'imitation':
+                    startImitationGame();
                     break;
             }
         }
 
         // 情绪指认游戏
         function startIdentificationGame() {
-            // 随机选择目标情绪
             currentTarget = emotions[Math.floor(Math.random() * emotions.length)];
             
-            // 创建选项（包含正确答案和3个错误答案）
             let options = [currentTarget];
             while (options.length < 4) {
                 const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
@@ -291,13 +308,11 @@
                 }
             }
             
-            // 打乱选项顺序
             options = shuffleArray(options);
             
-            // 更新界面
             const gameArea = document.getElementById('gameArea');
             gameArea.innerHTML = `
-                <div class="target">请识别这个情绪: ${emotionIcons[currentTarget]}</div>
+                <div class="target">这是什么情绪？ ${emotionIcons[currentTarget]}</div>
                 <div class="options" id="optionsContainer"></div>
             `;
             
@@ -313,17 +328,14 @@
 
         // 情绪配对游戏
         function startMatchingGame() {
-            // 随机选择目标情绪
             currentTarget = emotions[Math.floor(Math.random() * emotions.length)];
             
-            // 创建选项（包含3个相同情绪的不同emoji和1个不同情绪）
             let options = [
                 { emotion: currentTarget, icon: emotionIcons[currentTarget] },
                 { emotion: currentTarget, icon: getSimilarEmoji(currentTarget) },
                 { emotion: currentTarget, icon: getSimilarEmoji(currentTarget) }
             ];
             
-            // 添加一个不同情绪的选项
             let differentEmotion;
             do {
                 differentEmotion = emotions[Math.floor(Math.random() * emotions.length)];
@@ -331,10 +343,8 @@
             
             options.push({ emotion: differentEmotion, icon: emotionIcons[differentEmotion] });
             
-            // 打乱选项顺序
             options = shuffleArray(options);
             
-            // 更新界面
             const gameArea = document.getElementById('gameArea');
             gameArea.innerHTML = `
                 <div class="target">请找出所有${currentTarget}的表情</div>
@@ -351,93 +361,34 @@
             });
         }
 
-        // 情境配对游戏
-        function startSituationGame() {
-            // 随机选择情境
-            const situation = situations[Math.floor(Math.random() * situations.length)];
-            currentTarget = situation.emotion;
+        // 情绪模仿游戏
+        function startImitationGame() {
+            currentTarget = emotions[Math.floor(Math.random() * emotions.length)];
             
-            // 创建选项（包含正确答案和3个错误答案）
-            let options = [situation.emotion];
-            while (options.length < 4) {
-                const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-                if (!options.includes(randomEmotion)) {
-                    options.push(randomEmotion);
-                }
-            }
+            const hints = {
+                '高兴': "嘴角上扬，眼睛眯起",
+                '伤心': "嘴角下垂，眼眶湿润", 
+                '惊讶': "眼睛睁大，嘴巴张开",
+                '生气': "眉头紧锁，嘴角下拉",
+                '厌恶': "鼻子皱起，嘴角歪斜",
+                '恐惧': "眼睛睁大，嘴巴张开"
+            };
             
-            // 打乱选项顺序
-            options = shuffleArray(options);
-            
-            // 更新界面
             const gameArea = document.getElementById('gameArea');
             gameArea.innerHTML = `
-                <div class="target">${situation.situation}，应该是什么情绪？</div>
-                <div class="options" id="optionsContainer"></div>
+                <div class="target">请模仿这个表情：${emotionIcons[currentTarget]} ${currentTarget}</div>
+                <div class="emoji-large">${emotionIcons[currentTarget]}</div>
+                <div style="margin: 20px 0; font-size: 1.2em; color: #666;">
+                    ${hints[currentTarget]}
+                </div>
+                <p style="margin: 20px 0;">做出表情后，请老师点击"手动判断"按钮</p>
             `;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            options.forEach(emotion => {
-                const option = document.createElement('div');
-                option.className = 'option';
-                option.innerHTML = `${emotion} ${emotionIcons[emotion]}`;
-                option.onclick = () => checkAnswer(emotion);
-                optionsContainer.appendChild(option);
-            });
         }
 
-        // 消除坏情绪游戏
-        function startEliminateGame() {
-            // 创建情绪泡泡（混合正面和负面情绪）
-            let emotionBubbles = [];
-            
-            // 添加2-3个负面情绪
-            const numNegative = Math.floor(Math.random() * 2) + 2;
-            for (let i = 0; i < numNegative; i++) {
-                const emotion = negativeEmotions[Math.floor(Math.random() * negativeEmotions.length)];
-                emotionBubbles.push({ emotion, isNegative: true });
-            }
-            
-            // 添加2-3个正面情绪
-            const positiveEmotions = ['高兴', '惊讶'];
-            const numPositive = Math.floor(Math.random() * 2) + 2;
-            for (let i = 0; i < numPositive; i++) {
-                const emotion = positiveEmotions[Math.floor(Math.random() * positiveEmotions.length)];
-                emotionBubbles.push({ emotion, isNegative: false });
-            }
-            
-            // 打乱顺序
-            emotionBubbles = shuffleArray(emotionBubbles);
-            
-            // 更新界面
-            const gameArea = document.getElementById('gameArea');
-            gameArea.innerHTML = `
-                <div class="target">请点击消除所有负面情绪（生气、伤心、厌恶、恐惧）</div>
-                <div class="options" id="optionsContainer"></div>
-            `;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            emotionBubbles.forEach(bubble => {
-                const option = document.createElement('div');
-                option.className = 'option';
-                option.innerHTML = emotionIcons[bubble.emotion];
-                option.dataset.emotion = bubble.emotion;
-                option.dataset.isNegative = bubble.isNegative;
-                option.onclick = function() {
-                    checkEliminateAnswer(this);
-                };
-                optionsContainer.appendChild(option);
-            });
-            
-            // 重置当前目标（这个游戏没有单一目标）
-            currentTarget = null;
-        }
-
-        // 检查答案（通用）
+        // 检查答案
         function checkAnswer(selectedEmotion) {
             const isCorrect = selectedEmotion === currentTarget;
             
-            // 记录结果
             gameData.push({
                 game: currentGame,
                 target: currentTarget,
@@ -446,12 +397,10 @@
                 timestamp: new Date().toISOString()
             });
             
-            // 显示反馈
             showFeedback(isCorrect, isCorrect ? 
                 `太棒了！答对了！这是${currentTarget}` : 
                 `不对哦，这是${currentTarget}`);
             
-            // 更新分数
             if (isCorrect) {
                 score += 10;
                 document.getElementById('score').textContent = score;
@@ -460,7 +409,6 @@
 
         // 检查配对答案
         function checkMatchingAnswer(isCorrect) {
-            // 记录结果
             gameData.push({
                 game: currentGame,
                 target: currentTarget,
@@ -469,60 +417,23 @@
                 timestamp: new Date().toISOString()
             });
             
-            // 显示反馈
             showFeedback(isCorrect, isCorrect ? 
                 `太棒了！这是${currentTarget}的表情` : 
                 `不对哦，这不是${currentTarget}的表情`);
             
-            // 更新分数
             if (isCorrect) {
                 score += 10;
                 document.getElementById('score').textContent = score;
             }
         }
 
-        // 检查消除游戏答案
-        function checkEliminateAnswer(element) {
-            const isNegative = element.dataset.isNegative === 'true';
-            const emotion = element.dataset.emotion;
-            
-            // 记录结果
-            gameData.push({
-                game: currentGame,
-                target: "消除负面情绪",
-                selected: emotion,
-                correct: isNegative,
-                timestamp: new Date().toISOString()
-            });
-            
-            if (isNegative) {
-                // 正确消除负面情绪
-                element.style.opacity = '0.3';
-                element.style.transform = 'scale(0.8)';
-                element.onclick = null; // 防止重复点击
-                
-                // 检查是否所有负面情绪都已消除
-                const remainingNegative = document.querySelectorAll('.option[data-is-negative="true"]:not([style*="opacity: 0.3"])');
-                if (remainingNegative.length === 0) {
-                    showFeedback(true, "太棒了！所有负面情绪都已消除！");
-                    score += 15;
-                    document.getElementById('score').textContent = score;
-                }
-            } else {
-                // 错误消除正面情绪
-                showFeedback(false, `这是${emotion}，是正面情绪，不需要消除`);
-            }
-        }
-
         // 显示反馈
         function showFeedback(isSuccess, message) {
-            // 移除之前的反馈
             const oldFeedback = document.querySelector('.feedback');
             if (oldFeedback) {
                 oldFeedback.remove();
             }
             
-            // 创建新反馈
             const feedback = document.createElement('div');
             feedback.className = `feedback ${isSuccess ? 'success' : 'error'}`;
             feedback.textContent = message;
@@ -569,7 +480,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `情绪游戏数据_${new Date().getTime()}.csv`);
+            link.setAttribute("download", `第一阶段数据_${new Date().getTime()}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -601,7 +512,6 @@
         }
 
         function getSimilarEmoji(emotion) {
-            // 返回相同情绪的不同emoji表示
             const variations = {
                 '高兴': ['😄', '😃', '😀', '😊', '😁'],
                 '伤心': ['😢', '😭', '😔', '😞', '😥'],
