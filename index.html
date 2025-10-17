@@ -1,708 +1,155 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>情绪理解训练系统 · 四阶段架构</title>
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#5b8cff" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#0b1020;        /* 默认深色主题 */
-      --panel:#141a2f;
-      --text:#e9ecff;
-      --muted:#b7c1ffcc;
-      --brand:#5b8cff;
-      --brand-2:#36d6c1;
-      --ok:#21c17a;
-      --bad:#ff5d66;
-      --warn:#f7b955;
-      --card:#0f1530;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 18px;
-      --pad: clamp(12px, 1.2vw, 16px);
-      --gap: clamp(10px, 1vw, 14px);
-      --btn: 60px; /* 可触达尺寸 */
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:"Noto Sans SC", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB"; background:linear-gradient(180deg,#0b1020,#0b1228 50%,#0b1020); color:var(--text);}
-    .app{min-height:100%; display:grid; grid-template-rows:auto 1fr auto;}
-    header{
-      position:sticky; top:0; z-index:20; backdrop-filter:saturate(1.2) blur(8px);
-      background:linear-gradient(180deg, rgba(20,26,47,.92), rgba(20,26,47,.75));
-      border-bottom:1px solid #2a3255; box-shadow:var(--shadow);
-    }
-    .bar{display:flex; align-items:center; gap:10px; padding:10px var(--pad);} 
-    .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px}
-    .logo span{background:linear-gradient(90deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-    .hint{margin-left:auto; display:flex; gap:10px; align-items:center}
-    .hint button{background:#1b2242;color:var(--text); border:1px solid #2c3562; padding:10px 14px; border-radius:12px}
-
-    main{padding: var(--pad); max-width:1200px; margin:0 auto; width:100%}
-    .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:var(--gap)}
-    .card{background:linear-gradient(160deg, #121939, #0d1230); border:1px solid #1f2850; border-radius:var(--radius); padding:18px; box-shadow:var(--shadow)}
-    .card h3{margin:0 0 8px 0; font-size:18px}
-    .sub{font-size:13px;color:var(--muted)}
-
-    .row{display:flex; gap:var(--gap); flex-wrap:wrap}
-    .col{flex:1; min-width:260px}
-
-    .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .toolbar select, .toolbar input[type="range"], .toolbar button{height:44px}
-
-    .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid #2c3562; background:#1b2242; color:var(--text); padding:10px 14px; border-radius:14px; text-decoration:none; font-weight:600; cursor:pointer; min-width:44px}
-    .btn:hover{border-color:#3c4580}
-    .btn.primary{background:linear-gradient(90deg, var(--brand), #6ea3ff); border-color:transparent; color:white}
-    .btn.success{background:linear-gradient(90deg, #21c17a, #37d6a2); border-color:transparent}
-    .btn.warn{background:linear-gradient(90deg, #f7b955, #f39c12); border-color:transparent}
-    .btn.ghost{background:transparent}
-
-    .stage{display:grid; gap:var(--gap)}
-    .hero{display:flex; align-items:center; gap:14px; padding:14px; border-radius:16px; border:1px dashed #33406b; background:linear-gradient(180deg,#0c1432,#0c1538)}
-    .hero .big{font-size:36px}
-
-    .chips{display:flex; gap:10px; flex-wrap:wrap}
-    .chip{border:1px solid #2c3562; padding:8px 12px; border-radius:999px; font-size:13px}
-
-    .game{background:linear-gradient(160deg, #0e1533, #0b1130); border:1px solid #27305a; border-radius:var(--radius); padding:20px; display:grid; gap:14px}
-    .game h4{margin:0}
-    .choices{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px}
-    .choice{font-size:18px; padding:14px; border-radius:14px; border:2px solid #2e396a; background:#151b3b; min-height:56px; display:flex; align-items:center; justify-content:center; user-select:none; touch-action:manipulation}
-    .choice:active{transform:scale(.98)}
-    .choice.good{border-color:#29c07c; background:linear-gradient(180deg,#132a26,#0f1f1b)}
-    .choice.bad{border-color:#ff5d66; background:linear-gradient(180deg,#2a141a,#1b0f11)}
-
-    .score{display:flex; gap:12px; align-items:center; font-weight:700}
-
-    .drag-wrap{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-    .drag-src, .drag-target{min-height:160px; border:2px dashed #38457a; border-radius:16px; padding:12px; display:flex; gap:10px; flex-wrap:wrap; align-content:flex-start}
-    .draggable{padding:10px 12px; background:#1a2144; border:1px solid #2f3a6b; border-radius:12px; font-size:18px}
-    .drag-target.over{background:rgba(91,140,255,0.08)}
-
-    .sort-list{display:flex; gap:12px; flex-wrap:wrap}
-    .sort-item{padding:10px 12px; border:2px solid #2e396a; border-radius:12px; background:#151b3b; font-size:16px}
-
-    .badge{padding:4px 8px; border-radius:999px; font-size:12px; background:#1b2242; border:1px solid #2e396a}
-
-    .footer{padding:8px var(--pad); color:var(--muted); font-size:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between}
-
-    /* 摄像头 
-    -------------------------------------------------- */
-    .camera{display:grid; gap:10px}
-    video{max-width:100%; width:100%; height:auto; border-radius:14px; border:1px solid #2e396a; background:#000}
-
-    /* 适配 iPad / 移动端 */
-    @media (hover:none){
-      .choice{min-height:64px; font-size:20px}
-      .btn{min-height:52px}
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>阶段一 · 基础感知与识别</title>
+<style>
+  :root{--bg:#0b1020;--panel:#0f1530;--line:#2a3561;--text:#e9edff;--muted:#aab4ff;--ok:#27c17d;--bad:#ff5d6a;--brand:#5b8cff;--r:18px}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0b1126);color:var(--text);font-family:-apple-system,system-ui,"PingFang SC","Noto Sans SC",Arial}
+  .app{min-height:100%;display:grid;grid-template-rows:auto 1fr auto;max-width:520px;margin:0 auto}
+  header{position:sticky;top:0;background:rgba(15,21,48,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:20}
+  .bar{display:flex;align-items:center;gap:10px;padding:10px 14px}
+  .bar h1{font-size:18px;margin:0;font-weight:800}
+  .bar .act{margin-left:auto;display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#151d42;color:var(--text);border-radius:14px;padding:10px 14px;font-weight:700;min-height:44px;min-width:44px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .btn.primary{background:linear-gradient(90deg,var(--brand),#73a4ff);border-color:transparent;color:#fff}
+  .btn.ghost{background:transparent}
+  .btn:active{transform:scale(.98)}
+  main{padding:12px}
+  .sec{background:linear-gradient(160deg,var(--panel),#0d1330);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:12px}
+  .sec h2{font-size:16px;margin:0 0 8px 0}
+  .grid{display:grid;grid-template-columns:1fr;gap:8px}
+  .tile{display:flex;align-items:center;gap:10px;background:linear-gradient(160deg,#121a3a,#0e1533);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .tile .ico{font-size:24px}
+  .tile .meta{margin-left:auto;color:var(--muted);font-size:12px}
+  .hero{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .hero .ico{font-size:22px}
+  .card{background:linear-gradient(160deg,#11183a,#0d1330);border:1px solid var(--line);border-radius:16px;padding:12px}
+  .face{font-size:84px;line-height:1;text-align:center}
+  .choices{display:grid;grid-template-columns:1fr;gap:10px}
+  .choice{border:2px solid var(--line);border-radius:14px;background:#151d42;color:var(--text);min-height:64px;font-size:18px;font-weight:700}
+  .choice.good{border-color:var(--ok);background:linear-gradient(180deg,#10271f,#0e1f19)}
+  .choice.bad{border-color:var(--bad);background:linear-gradient(180deg,#2a1620,#1c0f14)}
+  .row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .chip{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#1b234a;color:var(--muted);font-size:12px}
+  .drag-wrap{display:grid;gap:10px}
+  .dropzone{min-height:120px;border:2px dashed var(--line);border-radius:14px;padding:10px;display:flex;gap:8px;flex-wrap:wrap}
+  .draggable{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#1a2147;font-size:18px}
+  .dropzone.over{background:rgba(91,140,255,.08)}
+  .camera{display:grid;gap:10px}
+  video{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);background:#000}
+  footer{padding:8px 14px;color:var(--muted);font-size:12px;text-align:center}
+</style>
 </head>
 <body>
-  <div class="app" id="app" aria-live="polite">
-    <header>
-      <div class="bar" role="navigation" aria-label="顶栏">
-        <div class="logo" aria-label="情绪理解训练系统">
-          <div class="big" aria-hidden="true">🎯</div>
-          <div>
-            <div>情绪理解训练系统</div>
-            <small class="sub">四阶段 · 自适应 · 本地隐私</small>
-          </div>
-        </div>
-        <div class="hint">
-          <button class="btn" id="btnHome" title="返回主页">🏠 主页</button>
-          <button class="btn" id="btnSettings" title="设置">⚙️ 设置</button>
-          <button class="btn" id="btnReport" title="报告">📈 报告</button>
-        </div>
+<div class="app" id="app">
+  <header>
+    <div class="bar">
+      <h1>🎵 阶段一 · 基础感知与识别</h1>
+      <div class="act">
+        <button class="btn" id="btnHome">🏠</button>
+        <button class="btn" id="btnReport">📈</button>
+        <button class="btn" id="btnExport">🧾</button>
       </div>
-    </header>
+    </div>
+  </header>
+  <main id="main" tabindex="-1" aria-live="polite"></main>
+  <footer>© <span id="y"></span> 情绪训练 · 阶段一 · 本地运行 / iPad 触控优化</footer>
+</div>
+<script>
+(function(){
+  const $=(s,el=document)=>el.querySelector(s);
+  const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
+  const DB_KEY='emo.stage1.v1';
+  const state={score:{}, prefs:{speech:true}};
+  const speak=(t)=>{ if(!state.prefs.speech) return; try{const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){} };
+  const save=()=>localStorage.setItem(DB_KEY,JSON.stringify(state));
+  const load=()=>{try{const raw=localStorage.getItem(DB_KEY); if(raw) Object.assign(state, JSON.parse(raw));}catch(e){} };
+  const bump=(gid,ok)=>{ const s=state.score[gid]||(state.score[gid]={ok:0,ng:0,best:0,last:''}); if(ok) s.ok++; else s.ng++; s.best=Math.max(s.best,s.ok); s.last=new Date().toLocaleString(); save(); };
+  const csv=()=>{ const rows=[["game","ok","ng","best","last"]]; Object.entries(state.score).forEach(([g,s])=>rows.push([g,s.ok||0,s.ng||0,s.best||0,s.last||''])); return rows.map(r=>r.join(',')).join('\n'); };
+  const download=(name,content)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content],{type:'text/plain;charset=utf-8;'})); a.download=name; a.click(); URL.revokeObjectURL(a.href); };
 
-    <main id="main" tabindex="-1">
-      <!-- 内容由 JS 渲染 -->
-    </main>
+  function home(){
+    const items=[
+      {id:'g1',hash:'#g1',ico:'😊',name:'(1) 情绪指认'},
+      {id:'g2',hash:'#g2',ico:'🧩',name:'(2) 情绪配对'},
+      {id:'g3',hash:'#g3',ico:'🎭',name:'(3) 情绪模仿(相机)'}
+    ];
+    $('#main').innerHTML=`<section class='sec'><h2>选择一个小游戏开始</h2><div class='grid'>${items.map(x=>`<button class='tile' onclick="location.hash='${x.hash}'"><div class='ico'>${x.ico}</div><div>${x.name}</div><div class='meta'>最佳 ${(state.score[x.id]?.best)||0}</div></button>`).join('')}</div><div class='row' style='margin-top:8px'><span class='chip'>语音播报已${state.prefs.speech?'开启':'关闭'}</span><button class='btn' id='toggleSpeech'>🔊 切换语音</button></div></section>`;
+    $('#toggleSpeech').onclick=()=>{state.prefs.speech=!state.prefs.speech; save(); home();};
+    speak('请选择一个训练开始。');
+  }
 
-    <footer class="footer">
-      <div>🛡️ 本地存储 | 无需联网 | 可导出 CSV</div>
-      <div>© <span id="year"></span> 情绪理解训练系统</div>
-    </footer>
-  </div>
+  function report(){
+    const list=Object.entries(state.score);
+    $('#main').innerHTML=`<section class='sec'><div class='hero'><div class='ico'>📈</div><h2>学习报告</h2></div><div class='card'><table style='width:100%;border-collapse:collapse;font-size:14px'><thead><tr><th style='text-align:left;padding:6px;border-bottom:1px solid var(--line)'>游戏</th><th style='text-align:right;padding:6px;border-bottom:1px solid var(--line)'>✅</th><th style='text-align:right;padding:6px;border-bottom:1px solid var(--line)'>❌</th><th style='text-align:right;padding:6px;border-bottom:1px solid var(--line)'>🏆</th><th style='text-align:right;padding:6px;border-bottom:1px solid var(--line)'>最近</th></tr></thead><tbody>${list.map(([g,s])=>`<tr><td style='padding:6px;border-bottom:1px dashed var(--line)'>${g}</td><td style='padding:6px;text-align:right;border-bottom:1px dashed var(--line)'>${s.ok||0}</td><td style='padding:6px;text-align:right;border-bottom:1px dashed var(--line)'>${s.ng||0}</td><td style='padding:6px;text-align:right;border-bottom:1px dashed var(--line)'>${s.best||0}</td><td style='padding:6px;text-align:right;border-bottom:1px dashed var(--line)'>${s.last||'—'}</td></tr>`).join('')}</tbody></table></div><div class='row' style='margin-top:8px'><span class='chip'>本地保存 · 可导出 CSV</span><button class='btn primary' id='back'>返回主页</button></div></section>`;
+    $('#back').onclick=()=>{location.hash='#home'}
+  }
 
-  <script>
-  ;(()=>{
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+  // ========== g1 指认 ==========
+  function g1(){
+    const all=[{emo:'高兴',icon:'😊'},{emo:'伤心',icon:'😢'},{emo:'生气',icon:'😠'},{emo:'害怕',icon:'😨'}];
+    const s=state.score.g1||{}; const level=Math.min(4,2+Math.floor((s.best||0)/5));
+    const pool=all.slice(0,level); const ans=pool[Math.floor(Math.random()*pool.length)];
+    const opts=[...pool].sort(()=>Math.random()-.5);
+    $('#main').innerHTML=`<section class='sec'><div class='hero'><div class='ico'>🎵</div><h2>(1) 情绪指认</h2></div><div class='card'><div class='face'>${ans.icon}</div><p style='text-align:center;color:var(--muted)'>请点击：这是什么情绪？</p><div class='choices'>${opts.map(o=>`<button class='choice' data-v='${o.emo}'>${o.emo}</button>`).join('')}</div><div class='row' style='margin-top:8px'><span class='chip'>✅ ${(s.ok||0)}　❌ ${(s.ng||0)}　🏆 ${(s.best||0)}</span><div class='row' style='gap:6px'><button class='btn' id='speak'>🔊</button><button class='btn primary' id='next'>下一题</button></div></div></div></section>`;
+    speak('这是什么情绪？');
+    $('#speak').onclick=()=>speak('这是什么情绪？');
+    $$('.choice').forEach(b=> b.onclick=()=>{ const ok=b.dataset.v===ans.emo; b.classList.add(ok?'good':'bad'); bump('g1',ok); speak(ok?`你真棒！这是${ans.emo}`:`再想想，这是${ans.emo}哦`); setTimeout(()=>g1(),600); });
+    $('#next').onclick=()=>g1();
+  }
 
-    const state = {
-      profile: { id: 'default', name: '学生A', theme: 'dark', voiceRate: 1.0 },
-      score: {}, // { gameId: { correct, wrong, best, lastPlayed } }
-      stageProgress: { s1:0, s2:0, s3:0, s4:0 },
-      prefs: { sound:true, speech:true, camera:false },
+  // ========== g2 配对（拖拽分类） ==========
+  function g2(){
+    const targets=['高兴','伤心','生气','害怕'];
+    const icons={高兴:'😊',伤心:'😢',生气:'😠',害怕:'😨'};
+    const s=state.score.g2||{}; const k=Math.min(4,2+Math.floor((s.best||0)/4));
+    const cats=targets.slice(0,k);
+    const samples=cats.flatMap(c=>[{emo:c,label:`${icons[c]} ${c}①`},{emo:c,label:`${icons[c]} ${c}②`}]).sort(()=>Math.random()-.5);
+    $('#main').innerHTML=`<section class='sec'><div class='hero'><div class='ico'>🎵</div><h2>(2) 情绪配对</h2></div><div class='card'><div class='row'><span class='chip'>把相同情绪拖到对应框内</span><span class='chip'>类别：${k}</span></div><div class='drag-wrap' style='margin-top:8px'><div class='dropzone' id='src'>${samples.map(s=>`<div class='draggable' draggable='true' data-emo='${s.emo}'>${s.label}</div>`).join('')}</div><div class='drag-wrap'>${cats.map(c=>`<div class='dropzone' data-emo='${c}' aria-label='目标 ${c}'><div class='chip'>目标：${c}</div></div>`).join('')}</div></div><div class='row' style='margin-top:8px'><span class='chip'>✅ ${(s.ok||0)}　❌ ${(s.ng||0)}　🏆 ${(s.best||0)}</span><button class='btn primary' id='next'>下一轮</button></div></div></section>`;
+    const onDragStart=(e)=>{ e.dataTransfer.setData('text/plain', e.target.dataset.emo); e.dataTransfer.dropEffect='move'; e.target.classList.add('dragging'); };
+    const onDragEnd=(e)=>{ e.target.classList.remove('dragging'); };
+    $$('.draggable').forEach(d=>{ d.addEventListener('dragstart',onDragStart); d.addEventListener('dragend',onDragEnd); });
+    $$('.dropzone').forEach(z=>{
+      z.addEventListener('dragover',e=>{e.preventDefault(); z.classList.add('over')});
+      z.addEventListener('dragleave',()=>z.classList.remove('over'));
+      z.addEventListener('drop',e=>{e.preventDefault(); z.classList.remove('over'); const expect=z.dataset.emo; const dragging=$('.dragging'); if(!dragging) return; const got=dragging.dataset.emo; if(expect===got){ z.appendChild(dragging); bump('g2',true); speak(`正确，${expect}`); }else{ bump('g2',false); speak('不是这里，试试别的目标'); }
+      });
+    });
+    $('#next').onclick=()=>g2();
+  }
+
+  // ========== g3 模仿（相机） ==========
+  async function g3(){
+    $('#main').innerHTML=`<section class='sec'><div class='hero'><div class='ico'>🎭</div><h2>(3) 情绪模仿（相机）</h2></div><div class='card camera'><div class='row'><span class='chip'>提示：跟我做表情，然后让老师按“完成/再试”</span><button class='btn' id='openCam'>📷 打开相机</button></div><video id='v' playsinline muted></video><div class='row'><button class='btn' data-emo='高兴'>😊 高兴</button><button class='btn' data-emo='伤心'>😢 伤心</button><button class='btn' data-emo='生气'>😠 生气</button><button class='btn' data-emo='害怕'>😨 害怕</button></div><div class='row'><span class='chip' id='tip'>请点击一个表情开始模仿</span><div style='display:flex;gap:6px'><button class='btn' id='ok'>✅ 完成</button><button class='btn' id='retry'>↻ 再试</button></div></div></div></section>`;
+    let current=null; const tip=$('#tip');
+    $('#openCam').onclick=async()=>{
+      try{ const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false}); const v=$('#v'); v.srcObject=stream; await v.play(); }catch(e){ alert('无法打开摄像头：'+e.message); }
     };
+    $$('.card .btn[data-emo]').forEach(b=> b.onclick=()=>{ current=b.dataset.emo; speak(`请做出${current}的表情`); tip.textContent=`请模仿：${current}`; });
+    $('#ok').onclick=()=>{ if(!current){speak('请选择要模仿的表情');return;} bump('g3',true); speak('你真棒！'); };
+    $('#retry').onclick=()=>{ if(!current){speak('请选择要模仿的表情');return;} bump('g3',false); speak('再试一次'); };
+  }
 
-    const STORAGE_KEY = 'emoTrain.v1';
-    function load(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){ Object.assign(state, JSON.parse(raw)); }
-      }catch(e){ console.warn('load failed', e) }
-    }
-    function save(){
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ console.warn('save failed', e) }
-    }
+  // 路由
+  const routes={'#home':home,'':home,'#report':report,'#g1':g1,'#g2':g2,'#g3':g3};
+  function router(){ (routes[location.hash]||home)(); window.scrollTo({top:0,behavior:'instant'}); }
 
-    // 语音播报
-    function speak(text){
-      if(!state.prefs.speech) return;
-      try{
-        const ut = new SpeechSynthesisUtterance(text);
-        ut.lang = 'zh-CN';
-        ut.rate = state.profile.voiceRate || 1.0;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(ut);
-      }catch(e){ console.warn('speech error', e) }
-    }
+  // 全局按钮
+  function bind(){
+    $('#btnHome').onclick=()=>location.hash='#home';
+    $('#btnReport').onclick=()=>location.hash='#report';
+    $('#btnExport').onclick=()=>download('stage1_report.csv', csv());
+  }
 
-    // CSV 导出
-    function exportCSV(){
-      const rows = [['profile','game','correct','wrong','best','lastPlayed']];
-      Object.entries(state.score).forEach(([gameId, s])=>{
-        rows.push([state.profile.name, gameId, s.correct||0, s.wrong||0, s.best||0, s.lastPlayed||'']);
-      });
-      const csv = rows.map(r=>r.join(',')).join('\n');
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `report_${Date.now()}.csv`;
-      a.click(); URL.revokeObjectURL(url);
-    }
-
-    // 评分与进度
-    function bumpScore(gameId, ok){
-      const s = state.score[gameId] || (state.score[gameId]={correct:0,wrong:0,best:0,lastPlayed:''});
-      if(ok) s.correct++; else s.wrong++;
-      s.best = Math.max(s.best, s.correct);
-      s.lastPlayed = new Date().toLocaleString();
-      save();
-      updateHeaderMiniReport();
-    }
-
-    function updateHeaderMiniReport(){
-      // 可扩展：顶栏显示今日正确/用时等
-    }
-
-    // 主题切换
-    function applyTheme(){
-      if(state.profile.theme === 'light'){
-        document.documentElement.style.setProperty('--bg', '#f7f8ff');
-        document.documentElement.style.setProperty('--panel', '#ffffff');
-        document.documentElement.style.setProperty('--text', '#0e1020');
-        document.documentElement.style.setProperty('--muted', '#3c4680');
-        document.documentElement.style.setProperty('--card', '#f2f4ff');
-      }else if(state.profile.theme === 'hc'){
-        document.documentElement.style.setProperty('--bg', '#000');
-        document.documentElement.style.setProperty('--panel', '#000');
-        document.documentElement.style.setProperty('--text', '#fff');
-        document.documentElement.style.setProperty('--muted', '#fff');
-        document.documentElement.style.setProperty('--brand', '#fff');
-        document.documentElement.style.setProperty('--brand-2', '#fff');
-        document.documentElement.style.setProperty('--card', '#000');
-      }else{
-        // dark 默认
-        document.documentElement.style.setProperty('--bg', '#0b1020');
-        document.documentElement.style.setProperty('--panel', '#141a2f');
-        document.documentElement.style.setProperty('--text', '#e9ecff');
-        document.documentElement.style.setProperty('--muted', '#b7c1ffcc');
-        document.documentElement.style.setProperty('--card', '#0f1530');
-      }
-    }
-
-    // 路由（hash）
-    const routes = {
-      '': renderHome,
-      '#home': renderHome,
-      '#settings': renderSettings,
-      '#report': renderReport,
-      '#g1': ()=>renderGame1('g1'),           // 情绪指认
-      '#g2': ()=>renderGame2('g2'),           // 情绪配对（拖拽）
-      '#g5': ()=>renderGame5('g5'),           // 强度排序
-      '#g8': ()=>renderGame8('g8'),           // 情绪调节策略
-      '#g12':()=>renderGame12('g12'),         // 消除坏情绪
-      // 其他游戏占位
-      '#g3': ()=>renderComing('g3','情绪模仿（支持摄像头）'),
-      '#g4': ()=>renderComing('g4','情境配对'),
-      '#g6': ()=>renderComing('g6','情绪原因推测'),
-      '#g7': ()=>renderComing('g7','社会情境决策'),
-      '#g9': ()=>renderComing('g9','共情理解'),
-      '#g10':()=>renderComing('g10','情绪记忆'),
-      '#g11':()=>renderComing('g11','情绪绘画表达'),
-    };
-
-    function router(){
-      const hash = location.hash || '#home';
-      (routes[hash]||renderHome)();
-      window.scrollTo({top:0, behavior:'smooth'});
-    }
-
-    // UI 片段
-    function stageCard(icon, title, items){
-      return `<div class="card stage" role="group" aria-label="${title}">
-        <div class="hero"><div class="big">${icon}</div><div>
-          <h3>${title}</h3>
-          <div class="sub">循序渐进 · 难度自适应</div>
-        </div></div>
-        <div class="grid">
-          ${items.map(x=>`<div class="game" aria-live="polite">
-            <h4>${x.idx}. ${x.name}</h4>
-            <div class="chips"><span class="chip">${x.tag}</span><span class="chip">最佳：${(state.score[x.hash]?.best)||0}</span></div>
-            <div class="toolbar">
-              <button class="btn primary" onclick="location.hash='${x.hash}'">进入训练</button>
-              <small class="sub">最近：${(state.score[x.hash]?.lastPlayed)||'—'}</small>
-            </div>
-          </div>`).join('')}
-        </div>
-      </div>`
-    }
-
-    function renderHome(){
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="row" aria-label="概览">
-          <div class="col card">
-            <h3>欢迎，${state.profile.name}</h3>
-            <p class="sub">选择一个阶段开始训练。系统会记录你的得分与最佳成绩，并可导出数据。</p>
-            <div class="chips">
-              <span class="chip">语音：${state.prefs.speech? '开启' : '关闭'}</span>
-              <span class="chip">相机：${state.prefs.camera? '允许' : '禁止'}</span>
-              <span class="chip">主题：${state.profile.theme}</span>
-            </div>
-            <div style="margin-top:12px" class="toolbar">
-              <button class="btn" onclick="location.hash='#settings'">⚙️ 快速设置</button>
-              <button class="btn" onclick="location.hash='#report'">📈 查看报告</button>
-              <button class="btn" onclick="(${exportCSV.toString()})()">🧾 导出CSV</button>
-            </div>
-          </div>
-        </section>
-        <section class="stage-list" aria-label="阶段列表" style="display:grid; gap:16px; margin-top:12px">
-          ${stageCard('🎵','第一阶段：基础感知与识别',[
-            {idx:1, name:'情绪指认游戏', tag:'2→4 选项 · 语音提示', hash:'#g1'},
-            {idx:2, name:'情绪配对游戏', tag:'拖拽 · 泛化', hash:'#g2'},
-            {idx:3, name:'情绪模仿游戏', tag:'镜像 · 教师评价', hash:'#g3'},
-          ])}
-          ${stageCard('📚','第二阶段：情境理解与应用',[
-            {idx:4, name:'情境配对游戏', tag:'图片+文字 · 因果解释', hash:'#g4'},
-            {idx:5, name:'情绪强度排序', tag:'轻→强 · 排序', hash:'#g5'},
-            {idx:6, name:'情绪原因推测', tag:'反推 · 干扰选项', hash:'#g6'},
-          ])}
-          ${stageCard('👥','第三阶段：社会认知与调节',[
-            {idx:7, name:'社会情境决策', tag:'后果预测', hash:'#g7'},
-            {idx:8, name:'情绪调节策略', tag:'呼吸/数数/求助/绘画', hash:'#g8'},
-            {idx:9, name:'共情理解游戏', tag:'观点采择', hash:'#g9'},
-          ])}
-          ${stageCard('🌟','第四阶段：综合应用与泛化',[
-            {idx:10, name:'情绪记忆游戏', tag:'序列记忆', hash:'#g10'},
-            {idx:11, name:'情绪绘画表达', tag:'画布工具', hash:'#g11'},
-            {idx:12, name:'消除坏情绪游戏', tag:'快速识别 · 强化', hash:'#g12'},
-          ])}
-        </section>
-      `;
-      $('#btnHome').disabled = true; $('#btnSettings').disabled=false; $('#btnReport').disabled=false;
-      speak('欢迎来到情绪理解训练系统。请选择一个游戏开始训练。');
-    }
-
-    function renderSettings(){
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="card" aria-label="设置">
-          <h3>⚙️ 设置</h3>
-          <div class="row" style="margin-top:8px">
-            <div class="col">
-              <div class="game">
-                <h4>个人信息</h4>
-                <label class="sub">姓名/昵称</label>
-                <input id="nameInput" type="text" value="${state.profile.name}" style="height:44px;border-radius:12px;border:1px solid #2c3562;background:#0f1530;color:var(--text);padding:0 12px"/>
-                <div class="chips">
-                  <span class="badge">ID: ${state.profile.id}</span>
-                </div>
-                <div class="toolbar">
-                  <button class="btn success" id="saveProfile">保存</button>
-                </div>
-              </div>
-            </div>
-            <div class="col">
-              <div class="game">
-                <h4>偏好</h4>
-                <div class="toolbar">
-                  <label><input type="checkbox" id="speechChk" ${state.prefs.speech?'checked':''}/> 语音播报</label>
-                  <label><input type="checkbox" id="soundChk" ${state.prefs.sound?'checked':''}/> 提示音</label>
-                  <label><input type="checkbox" id="camChk" ${state.prefs.camera?'checked':''}/> 摄像头</label>
-                </div>
-                <label class="sub">语速：<span id="rateVal">${state.profile.voiceRate.toFixed(1)}</span></label>
-                <input id="rateRange" type="range" min="0.6" max="1.6" step="0.1" value="${state.profile.voiceRate}" style="width:100%"/>
-                <label class="sub">主题</label>
-                <div class="toolbar">
-                  <button class="btn" data-theme="dark">🌙 深色</button>
-                  <button class="btn" data-theme="light">☀️ 浅色</button>
-                  <button class="btn" data-theme="hc">🟡 高对比</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="toolbar" style="margin-top:10px">
-            <button class="btn" onclick="(${exportCSV.toString()})()">🧾 导出CSV</button>
-            <button class="btn warn" id="resetAll">重置全部数据</button>
-          </div>
-        </section>
-      `;
-      $('#btnHome').disabled=false; $('#btnSettings').disabled=true; $('#btnReport').disabled=false;
-
-      $('#saveProfile').onclick = ()=>{ state.profile.name = $('#nameInput').value.trim()||state.profile.name; save(); speak('已保存。'); };
-      $('#speechChk').onchange = e=>{ state.prefs.speech = e.target.checked; save(); };
-      $('#soundChk').onchange = e=>{ state.prefs.sound = e.target.checked; save(); };
-      $('#camChk').onchange = e=>{ state.prefs.camera = e.target.checked; save(); };
-      $('#rateRange').oninput = e=>{ state.profile.voiceRate = parseFloat(e.target.value); $('#rateVal').textContent = state.profile.voiceRate.toFixed(1); };
-      $$('.toolbar .btn[data-theme]').forEach(b=> b.onclick = ()=>{ state.profile.theme = b.dataset.theme; applyTheme(); save(); });
-      $('#resetAll').onclick = ()=>{ if(confirm('确定要重置全部进度与设置？')){ localStorage.removeItem(STORAGE_KEY); location.reload(); } };
-    }
-
-    function renderReport(){
-      const el = $('#main');
-      const list = Object.entries(state.score);
-      const totalCorrect = list.reduce((a,[,s])=>a+(s.correct||0),0);
-      const totalWrong = list.reduce((a,[,s])=>a+(s.wrong||0),0);
-      el.innerHTML = `
-        <section class="card">
-          <h3>📈 学习报告</h3>
-          <div class="chips">
-            <span class="chip">总正确：${totalCorrect}</span>
-            <span class="chip">总错误：${totalWrong}</span>
-            <span class="chip">游戏数量：${list.length}</span>
-          </div>
-          <div style="margin-top:10px">
-            <table style="width:100%; border-collapse:collapse; font-size:14px">
-              <thead><tr>
-                <th style="text-align:left; border-bottom:1px solid #2c3562; padding:8px">游戏</th>
-                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">正确</th>
-                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">错误</th>
-                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">最佳</th>
-                <th style="text-align:right; border-bottom:1px solid #2c3562; padding:8px">最近</th>
-              </tr></thead>
-              <tbody>
-              ${list.map(([id,s])=>`<tr>
-                <td style="padding:8px; border-bottom:1px dashed #2c3562">${id}</td>
-                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.correct||0}</td>
-                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.wrong||0}</td>
-                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.best||0}</td>
-                <td style="padding:8px; border-bottom:1px dashed #2c3562; text-align:right">${s.lastPlayed||'—'}</td>
-              </tr>`).join('')}
-              </tbody>
-            </table>
-          </div>
-          <div class="toolbar" style="margin-top:12px">
-            <button class="btn" onclick="(${exportCSV.toString()})()">🧾 导出CSV</button>
-            <button class="btn" onclick="location.hash='#home'">返回</button>
-          </div>
-        </section>
-      `;
-      $('#btnHome').disabled=false; $('#btnSettings').disabled=false; $('#btnReport').disabled=true;
-    }
-
-    function renderComing(gameId, title){
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="card">
-          <h3>⏳ ${title}</h3>
-          <p class="sub">该游戏的占位界面。你可以先开展其他已实现的训练：#g1、#g2、#g5、#g8、#g12。</p>
-          <div class="toolbar"><button class="btn" onclick="location.hash='#home'">返回主页</button></div>
-        </section>
-      `;
-    }
-
-    // Game 1: 情绪指认（2→4 选项 · 语音）
-    function renderGame1(gameId){
-      const all = [
-        {emo:'高兴', icon:'😊'},
-        {emo:'伤心', icon:'😢'},
-        {emo:'生气', icon:'😠'},
-        {emo:'害怕', icon:'😨'},
-      ];
-      // 难度根据历史成绩调整（2~4 选项）
-      const s = state.score[gameId]||{};
-      const level = Math.min(4, 2 + Math.floor((s.best||0)/5));
-      const pool = all.slice(0, level);
-      const ans = pool[Math.floor(Math.random()*pool.length)];
-      const choices = [...pool].sort(()=>Math.random()-0.5);
-
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="game" aria-label="情绪指认">
-          <div class="hero"><div class="big" aria-hidden="true">🎵</div><div>
-            <h3>1. 这是什么情绪？</h3>
-            <div class="sub">难度：${level} 选项</div>
-          </div></div>
-          <div class="card" style="text-align:center">
-            <div style="font-size:80px; line-height:1" aria-label="目标表情">${ans.icon}</div>
-            <div class="sub" style="margin-top:6px">请指认：这是什么情绪？</div>
-          </div>
-          <div class="choices" role="list" aria-label="选择区">
-            ${choices.map(c=>`<button class="choice" role="listitem" data-v="${c.emo}">${c.emo}</button>`).join('')}
-          </div>
-          <div class="row" style="align-items:center; justify-content:space-between">
-            <div class="score">✅ ${(s.correct||0)} &nbsp; ❌ ${(s.wrong||0)} &nbsp; 🏆 最佳 ${(s.best||0)}</div>
-            <div class="toolbar">
-              <button class="btn" onclick="location.hash='#home'">返回</button>
-              <button class="btn primary" id="nextQ">下一题</button>
-            </div>
-          </div>
-        </section>
-      `;
-      speak('这是什么情绪？');
-
-      $$('.choice').forEach(b=> b.onclick = ()=>{
-        const ok = b.dataset.v === ans.emo;
-        b.classList.add(ok?'good':'bad');
-        bumpScore(gameId, ok);
-        if(ok) speak(`太棒了！这是${ans.emo}`); else speak(`再想想，这是${ans.emo}哦`);
-      });
-      $('#nextQ').onclick = ()=> renderGame1(gameId);
-    }
-
-    // Game 2: 情绪配对（拖拽）
-    function renderGame2(gameId){
-      const targets = ['高兴','伤心','生气','害怕'];
-      const emoIcon = {高兴:'😊',伤心:'😢',生气:'😠',害怕:'😨'};
-      // 难度：2→4 类别
-      const s = state.score[gameId]||{};
-      const k = Math.min(4, 2 + Math.floor((s.best||0)/4));
-      const cats = targets.slice(0,k);
-      const samples = cats.flatMap(c=>[
-        {emo:c, label:`${emoIcon[c]} ${c}①`},
-        {emo:c, label:`${emoIcon[c]} ${c}②`}
-      ]).sort(()=>Math.random()-0.5);
-
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="game" aria-label="情绪配对">
-          <div class="hero"><div class="big" aria-hidden="true">🎵</div><div>
-            <h3>2. 把相同情绪拖到对应框内</h3>
-            <div class="sub">训练情绪泛化能力 · 难度：${k} 类别</div>
-          </div></div>
-          <div class="drag-wrap">
-            <div class="drag-src" id="dragSrc" aria-label="待分类">
-              ${samples.map((s,i)=>`<div class="draggable" draggable="true" data-emo="${s.emo}" aria-grabbed="false" role="button">${s.label}</div>`).join('')}
-            </div>
-            <div class="drag-targets">
-              ${cats.map(c=>`<div class="drag-target" data-emo="${c}" aria-label="目标 ${c}"><div class="sub">目标情绪：${c}</div></div>`).join('')}
-            </div>
-          </div>
-          <div class="toolbar" style="justify-content:space-between">
-            <div class="score">✅ ${(s.correct||0)} &nbsp; ❌ ${(s.wrong||0)} &nbsp; 🏆 最佳 ${(s.best||0)}</div>
-            <div>
-              <button class="btn" onclick="location.hash='#home'">返回</button>
-              <button class="btn primary" id="nextQ">下一轮</button>
-            </div>
-          </div>
-        </section>
-      `;
-
-      const onDragStart = (e)=>{ e.dataTransfer.setData('text/plain', e.target.dataset.emo); e.dataTransfer.dropEffect='move'; e.target.classList.add('dragging'); };
-      const onDragEnd = (e)=>{ e.target.classList.remove('dragging'); };
-      const onDragOver = (e)=>{ e.preventDefault(); e.currentTarget.classList.add('over'); };
-      const onLeave = (e)=>{ e.currentTarget.classList.remove('over'); };
-      const onDrop = (e)=>{
-        e.preventDefault();
-        const expect = e.currentTarget.dataset.emo;
-        const dragging = $('.dragging');
-        if(!dragging) return;
-        const got = dragging.dataset.emo;
-        if(expect === got){
-          e.currentTarget.appendChild(dragging);
-          dragging.classList.remove('dragging');
-          bumpScore(gameId, true);
-          speak(`正确，${expect}`);
-        }else{
-          bumpScore(gameId, false);
-          speak(`不是这里，试试别的目标`);
-        }
-        e.currentTarget.classList.remove('over');
-      };
-
-      $$('.draggable').forEach(d=>{ d.addEventListener('dragstart', onDragStart); d.addEventListener('dragend', onDragEnd); });
-      $$('.drag-target').forEach(t=>{
-        t.addEventListener('dragover', onDragOver);
-        t.addEventListener('dragleave', onLeave);
-        t.addEventListener('drop', onDrop);
-      });
-      $('#nextQ').onclick = ()=> renderGame2(gameId);
-    }
-
-    // Game 5: 情绪强度排序（轻→强）
-    function renderGame5(gameId){
-      const emo = '生气';
-      const items = [
-        {key:'轻微', label:'轻微生气 😕'},
-        {key:'中等', label:'中等生气 😠'},
-        {key:'强烈', label:'非常生气 🤬'},
-      ].sort(()=>Math.random()-0.5);
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="game" aria-label="情绪强度排序">
-          <div class="hero"><div class="big" aria-hidden="true">📚</div><div>
-            <h3>5. 请按从轻微到强烈的顺序排列「${emo}」</h3>
-            <div class="sub">拖动卡片排序后点击校验</div>
-          </div></div>
-          <div class="sort-list" id="sortList">
-            ${items.map(i=>`<div class="sort-item" draggable="true" data-key="${i.key}">${i.label}</div>`).join('')}
-          </div>
-          <div class="toolbar" style="justify-content:space-between">
-            <div class="score">✅ ${(state.score[gameId]?.correct||0)} &nbsp; ❌ ${(state.score[gameId]?.wrong||0)} &nbsp; 🏆 最佳 ${(state.score[gameId]?.best||0)}</div>
-            <div>
-              <button class="btn" onclick="location.hash='#home'">返回</button>
-              <button class="btn primary" id="checkOrder">校验</button>
-            </div>
-          </div>
-        </section>
-      `;
-
-      // 简易拖拽排序（同容器）
-      const list = $('#sortList');
-      let dragEl = null;
-      list.addEventListener('dragstart', e=>{ dragEl = e.target; e.dataTransfer.effectAllowed='move'; });
-      list.addEventListener('dragover', e=>{
-        e.preventDefault();
-        const after = Array.from(list.children).find(ch=>{
-          const rect= ch.getBoundingClientRect();
-          return e.clientX < rect.left + rect.width/2;
-        });
-        if(after) list.insertBefore(dragEl, after); else list.appendChild(dragEl);
-      });
-      list.addEventListener('dragend', ()=> dragEl=null);
-
-      $('#checkOrder').onclick = ()=>{
-        const keys = $$('.sort-item', list).map(el=>el.dataset.key);
-        const ok = JSON.stringify(keys) === JSON.stringify(['轻微','中等','强烈']);
-        bumpScore(gameId, ok);
-        if(ok){ speak('正确，从轻微到强烈。'); } else { speak('顺序不对，再试一次。'); }
-      };
-    }
-
-    // Game 8: 情绪调节策略
-    function renderGame8(gameId){
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="game" aria-label="情绪调节策略">
-          <div class="hero"><div class="big" aria-hidden="true">👥</div><div>
-            <h3>8. 我现在很生气，可以怎么做？</h3>
-            <div class="sub">选择一个策略并跟随提示执行</div>
-          </div></div>
-          <div class="choices" id="strats">
-            <button class="choice" data-act="breath">💨 深呼吸5次</button>
-            <button class="choice" data-act="count">🔢 从1数到10</button>
-            <button class="choice" data-act="adult">👥 找大人帮忙</button>
-            <button class="choice" data-act="draw">🎨 画画表达情绪</button>
-          </div>
-          <div id="coach" class="card" aria-live="polite"><div class="sub">选择一个策略，系统会给予分步指导。</div></div>
-          <div class="toolbar" style="justify-content:space-between">
-            <div class="score">✅ ${(state.score[gameId]?.correct||0)} &nbsp; ❌ ${(state.score[gameId]?.wrong||0)} &nbsp; 🏆 最佳 ${(state.score[gameId]?.best||0)}</div>
-            <div>
-              <button class="btn" onclick="location.hash='#home'">返回</button>
-            </div>
-          </div>
-        </section>
-      `;
-      const coach = $('#coach');
-      $('#strats').onclick = (e)=>{
-        const b = e.target.closest('.choice'); if(!b) return;
-        const act = b.dataset.act;
-        if(act==='breath'){
-          coach.innerHTML = `<h4>练习：深呼吸</h4><ol><li>吸气 4 秒</li><li>屏息 2 秒</li><li>呼气 4 秒</li><li>重复 5 次</li></ol>`;
-          speak('跟着我，一起做五次深呼吸。吸气四秒，停两秒，呼气四秒。');
-          bumpScore(gameId, true);
-        }else if(act==='count'){
-          coach.innerHTML = `<h4>练习：数数</h4><p>慢慢从 1 数到 10，配合均匀呼吸。</p>`;
-          speak('慢慢从一数到十。'); bumpScore(gameId, true);
-        }else if(act==='adult'){
-          coach.innerHTML = `<h4>求助：找大人</h4><p>现在请找到老师或家长，清楚地描述发生了什么和你的感受。</p>`;
-          speak('去找大人帮忙，把发生的事情和你的感受说清楚。'); bumpScore(gameId, true);
-        }else if(act==='draw'){
-          coach.innerHTML = `<h4>表达：画画</h4><p>拿起纸笔，把你的感受画出来，画完后给老师看看。</p>`;
-          speak('拿起纸笔，把你的感受画出来。'); bumpScore(gameId, true);
-        }
-      };
-    }
-
-    // Game 12: 消除坏情绪（点击负面泡泡）
-    function renderGame12(gameId){
-      const pos = ['😊','🥰','😍','😄'];
-      const neg = ['😠','😢','😨','😞'];
-      const pool = [...pos, ...neg].sort(()=>Math.random()-0.5).slice(0,8);
-      const need = pool.filter(x=>neg.includes(x)).length;
-      const el = $('#main');
-      el.innerHTML = `
-        <section class="game" aria-label="消除坏情绪">
-          <div class="hero"><div class="big" aria-hidden="true">🌟</div><div>
-            <h3>12. 点击消除所有负面情绪</h3>
-            <div class="sub">已消除：<span id="killed">0</span> / ${need} 个负面情绪</div>
-          </div></div>
-          <div class="choices" id="bubbles" style="grid-template-columns:repeat(auto-fit,minmax(90px,1fr))">
-            ${pool.map((e,i)=>`<button class="choice" data-emo="${e}" style="font-size:32px; min-height:80px">${e}</button>`).join('')}
-          </div>
-          <div class="toolbar" style="justify-content:space-between">
-            <div class="score">✅ ${(state.score[gameId]?.correct||0)} &nbsp; ❌ ${(state.score[gameId]?.wrong||0)} &nbsp; 🏆 最佳 ${(state.score[gameId]?.best||0)}</div>
-            <div>
-              <button class="btn" onclick="location.hash='#home'">返回</button>
-              <button class="btn primary" id="again">再来一轮</button>
-            </div>
-          </div>
-        </section>
-      `;
-
-      let killed = 0;
-      $('#bubbles').onclick = (e)=>{
-        const b = e.target.closest('.choice'); if(!b) return;
-        const emo = b.dataset.emo;
-        const isNeg = ['😠','😢','😨','😞'].includes(emo);
-        if(isNeg){
-          b.classList.add('good');
-          b.disabled = true;
-          killed++; $('#killed').textContent = killed;
-          bumpScore(gameId, true);
-          if(killed===need){ speak('做得好！你清除了所有负面情绪。'); }
-        }else{
-          b.classList.add('bad');
-          bumpScore(gameId, false);
-          speak('这是积极情绪，留下它。');
-          setTimeout(()=> b.classList.remove('bad'), 500);
-        }
-      };
-      $('#again').onclick = ()=> renderGame12(gameId);
-    }
-
-    // 摄像头（供 g3 等使用）
-    async function startCamera(videoEl){
-      if(!state.prefs.camera){ alert('未在设置中开启摄像头权限'); return; }
-      try{
-        const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
-        videoEl.srcObject = stream; await videoEl.play();
-      }catch(e){ alert('无法打开摄像头：'+e.message) }
-    }
-
-    // 事件绑定 & 初始化
-    function bindGlobals(){
-      $('#btnHome').onclick = ()=> location.hash = '#home';
-      $('#btnSettings').onclick = ()=> location.hash = '#settings';
-      $('#btnReport').onclick = ()=> location.hash = '#report';
-      window.addEventListener('hashchange', router);
-      $('#year').textContent = new Date().getFullYear();
-    }
-
-    // 启动
-    load(); applyTheme(); bindGlobals(); router();
-  })();
-  </script>
+  // 启动
+  load(); bind(); router(); window.addEventListener('hashchange',router); $('#y').textContent=new Date().getFullYear();
+})();
+</script>
 </body>
 </html>
